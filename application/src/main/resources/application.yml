@@ -6,7 +6,7 @@ server:
 
 spring:
   application:
-    name: ecommerce-semantic-search
+    name: chuyende-web
 
   datasource:
     url: ${DB_URL}
