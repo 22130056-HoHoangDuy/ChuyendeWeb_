@@ -1,0 +1,38 @@
+package com.ecommerce.product.controller;
+
+import com.ecommerce.product.domain.Product;
+import com.ecommerce.product.dto.response.ProductResponseDTO;
+import com.ecommerce.product.service.WishlistService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/wishlist")
+@RequiredArgsConstructor
+public class WishlistController {
+
+    private final WishlistService wishlistService;
+
+    @PostMapping("/{productId}/toggle")
+    public ResponseEntity<?> toggleWishlist(@RequestParam Long userId, @PathVariable Long productId) {
+        wishlistService.toggleWishlist(userId, productId);
+        return ResponseEntity.ok("Đã cập nhật danh sách yêu thích");
+    }
+
+    @GetMapping("/my-list")
+    public ResponseEntity<?> getMyWishlist(@RequestParam Long userId) {
+        return ResponseEntity.ok(wishlistService.getMyWishlist(userId));
+    }
+
+    @GetMapping("/{productId}/check")
+    public ResponseEntity<Boolean> checkFavorite(@RequestParam Long userId, @PathVariable Long productId) {
+        return ResponseEntity.ok(wishlistService.isFavorite(userId, productId));
+    }
+//    @GetMapping("/products")
+//    public ResponseEntity<List<ProductResponseDTO>> getProductsForUser(@RequestParam Long userId) {
+//        return ResponseEntity.ok(wishlistService.getProductsWithFavoriteStatus(userId));
+//    }
+}
