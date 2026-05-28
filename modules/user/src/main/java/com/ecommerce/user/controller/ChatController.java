@@ -27,4 +27,14 @@ public class ChatController {
     public ResponseEntity<?> getHistory(@PathVariable Long convId) {
         return ResponseEntity.ok(chatService.getMessagesByConversation(convId));
     }
+
+    @GetMapping("/conversations")
+    public ResponseEntity<?> getConversations(Principal principal) {
+
+        Long userId = userService.findIdByEmail(principal.getName());
+
+        return ResponseEntity.ok(
+                chatService.getUserConversations(userId)
+        );
+    }
 }
