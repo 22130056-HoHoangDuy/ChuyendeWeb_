@@ -16,8 +16,8 @@ bin/
 .DS_Store
 Thumbs.db
 # Chặn file chứa mật khẩu và secret key
-.env
 .evn
+
 *.env
 *.local
 # IntelliJ rác

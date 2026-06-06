@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,16 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Message getMessagesByConversation(Long convId) {
-        return msgRepo.findByConversationIdOrderByCreatedAtAsc(convId);
+    public List<Message> getMessagesByConversation(Long convId) {
+        return msgRepo.findAllByConversationIdOrderByCreatedAtAsc(convId);
+    }
+
+    @Override
+    public List<Conversation> getUserConversations(Long userId) {
+        return convRepo
+                .findAllByBuyerIdOrSellerIdOrderByLastMessageAtDesc(
+                        userId,
+                        userId
+                );
     }
 }
