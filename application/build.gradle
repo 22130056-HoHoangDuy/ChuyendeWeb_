@@ -16,5 +16,6 @@ dependencies {
     implementation project(':modules:product')
     implementation project(':modules:order')
     implementation project(':modules:payment')
+    implementation project(':modules:notification')
     implementation 'org.springframework.boot:spring-boot-starter-web'
 }
