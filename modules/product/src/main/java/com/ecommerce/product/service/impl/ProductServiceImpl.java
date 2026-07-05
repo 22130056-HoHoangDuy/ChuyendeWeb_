@@ -2,6 +2,7 @@ package com.ecommerce.product.service.impl;
 
 import com.ecommerce.product.domain.Product;
 import com.ecommerce.product.domain.SellerProduct;
+import com.ecommerce.product.dto.request.ProductFilterRequest;
 import com.ecommerce.product.dto.request.ProductRequest;
 import com.ecommerce.product.dto.response.ProductDetailResponse;
 import com.ecommerce.product.dto.response.ProductHomeResponse;
@@ -12,10 +13,13 @@ import com.ecommerce.product.service.ProductService;
 import com.ecommerce.product.service.WishlistService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +30,7 @@ public class ProductServiceImpl implements ProductService {
     private final ObjectMapper objectMapper;
     private final SellerProductRepository sellerProductRepository;
     private final WishlistService wishlistService;
+
     @Override
     @Transactional
     public Product createProduct(ProductRequest request) {
@@ -74,7 +79,8 @@ public class ProductServiceImpl implements ProductService {
         if (request.vector() != null) {
             try {
                 product.setEmbedding(objectMapper.writeValueAsString(request.vector()));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         return productRepository.save(product);
@@ -88,7 +94,6 @@ public class ProductServiceImpl implements ProductService {
         }
         productRepository.deleteById(id);
     }
-
 
 
     @Override
@@ -140,18 +145,18 @@ public class ProductServiceImpl implements ProductService {
             );
         }).collect(Collectors.toList());
     }
+
     @Override
     public List<Product> searchSemantic(List<Double> queryVector) {
         return null;
     }
 
 
-
-
     @Override
     public List<SellerProduct> getAllActiveBySeller(Long sellerId) {
         return sellerProductRepository.findAllBySellerIdAndStatus(sellerId, SellerProductStatus.ACTIVE);
     }
+
     @Override
     public List<SellerProduct> getAllForAdmin() {
         return sellerProductRepository.findAll();
@@ -175,5 +180,16 @@ public class ProductServiceImpl implements ProductService {
                 sp.getStock(),
                 sp.getSellerId()
         );
+    }
+
+    @Override
+    public Page<ProductHomeResponse>
+    filterProducts(
+            ProductFilterRequest request,
+            Long userId
+    ) {
+
+        throw new UnsupportedOperationException(
+                "Đang chờ quyết định về cơ cấu giá.");
     }
 }

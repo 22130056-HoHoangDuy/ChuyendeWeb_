@@ -1,5 +1,6 @@
 package com.ecommerce.product.controller;
 
+import com.ecommerce.product.dto.request.ProductFilterRequest;
 import com.ecommerce.product.dto.request.ProductRequest;
 import com.ecommerce.product.dto.response.ProductHomeResponse;
 import com.ecommerce.product.service.ProductService;
@@ -59,5 +60,31 @@ public class ProductController {
     public ResponseEntity<?> getProductDetail(@PathVariable Long id) {
         log.info("Đang lấy chi tiết cho SellerProduct ID: {}", id);
         return ResponseEntity.ok(productService.getProductDetail(id));
+    }
+
+    @PostMapping("/filter")
+    public ResponseEntity<?> filter(
+            @RequestBody ProductFilterRequest request,
+            Authentication authentication
+    ) {
+
+        Long userId = null;
+
+        if (authentication != null &&
+                authentication.isAuthenticated()) {
+
+            try {
+                userId = Long.valueOf(
+                        authentication.getName());
+            } catch (Exception ignored) {
+            }
+        }
+
+        return ResponseEntity.ok(
+                productService.filterProducts(
+                        request,
+                        userId
+                )
+        );
     }
 }
