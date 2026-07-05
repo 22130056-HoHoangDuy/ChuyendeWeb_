@@ -18,4 +18,5 @@ dependencies {
     implementation project(':modules:payment')
     implementation project(':modules:notification')
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
