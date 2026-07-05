@@ -16,7 +16,7 @@ function Navbar() {
 
                     <Link
                         className="nav-link"
-                        to="/"
+                        to="/home"
                     >
                         Trang chủ
                     </Link>
@@ -28,6 +28,17 @@ function Navbar() {
                         Sản phẩm
                     </Link>
 
+                    {/* Nút chuyển sang trang Cá nhân */}
+                    <Link
+                        to="/profile"
+                        className="text-decoration-none"
+                    >
+                        <button className="btn btn-outline-secondary">
+                            👤 Hồ sơ
+                        </button>
+                    </Link>
+
+                    {/* Nút Giỏ hàng hiện tại */}
                     <Link
                         to="/cart"
                         className="text-decoration-none"
