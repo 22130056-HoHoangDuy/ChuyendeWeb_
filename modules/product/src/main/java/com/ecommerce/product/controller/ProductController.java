@@ -5,12 +5,13 @@ import com.ecommerce.product.dto.request.ProductRequest;
 import com.ecommerce.product.dto.response.ProductHomeResponse;
 import com.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/products")
@@ -74,8 +75,7 @@ public class ProductController {
                 authentication.isAuthenticated()) {
 
             try {
-                userId = Long.valueOf(
-                        authentication.getName());
+                userId = Long.valueOf(authentication.getName());
             } catch (Exception ignored) {
             }
         }

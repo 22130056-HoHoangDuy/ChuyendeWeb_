@@ -9,7 +9,8 @@ import java.util.List;
 
 @Repository
 public interface SellerProductRepository extends JpaRepository<SellerProduct, Long> {
-     List<SellerProduct> findAllByStatus(SellerProductStatus status);
+    List<SellerProduct> findAllByStatus(SellerProductStatus status);
 
-     List<SellerProduct> findAllBySellerIdAndStatus(Long sellerId, SellerProductStatus status);
+    List<SellerProduct> findAllBySellerIdAndStatus(Long sellerId, SellerProductStatus status);
+
 }

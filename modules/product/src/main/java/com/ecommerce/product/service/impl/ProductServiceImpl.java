@@ -190,6 +190,12 @@ public class ProductServiceImpl implements ProductService {
     ) {
 
         throw new UnsupportedOperationException(
-                "Đang chờ quyết định về cơ cấu giá.");
+                """
+                        Filter Product đang được triển khai.
+                        Kiến trúc đã chốt:
+                        - filter theo SellerProduct
+                        - trả về ProductHomeResponse
+                        - hỗ trợ price filter và stock filter
+                        """);
     }
 }
