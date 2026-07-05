@@ -16,7 +16,7 @@ bin/
 .DS_Store
 Thumbs.db
 # Chặn file chứa mật khẩu và secret key
-.evn
+.env
 
 *.env
 *.local
