@@ -28,7 +28,6 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
 
-
         Review review = Review.builder()
                 .userId(userId)
                 .orderItemId(orderItemId)
@@ -43,7 +42,6 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
 
-
     @Override
     public List<Review> getReviewsByProduct(Long productId) {
         return reviewRepository.findAllByProductId(productId);
@@ -56,5 +54,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .mapToInt(Review::getRating)
                 .average()
                 .orElse(0.0);
+
     }
 }

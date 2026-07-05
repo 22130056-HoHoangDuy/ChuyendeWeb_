@@ -5,23 +5,22 @@ import lombok.Data;
 @Data
 public class ProductFilterRequest {
 
+    // Product
     private String keyword;
-
     private Long categoryId;
-
     private String origin;
-
     private String size;
 
-    // giữ lại nhưng chưa implement
+    // SellerProduct
     private Double minPrice;
     private Double maxPrice;
-
     private Boolean inStock;
 
-    private String sortBy = "newest";
+    // UI
+    private String sortBy;
 
+    // paging
     private Integer page = 0;
-
     private Integer sizePage = 12;
+
 }

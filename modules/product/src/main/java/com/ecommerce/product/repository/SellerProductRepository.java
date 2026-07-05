@@ -13,4 +13,12 @@ public interface SellerProductRepository extends JpaRepository<SellerProduct, Lo
 
     List<SellerProduct> findAllBySellerIdAndStatus(Long sellerId, SellerProductStatus status);
 
+     List<SellerProduct>
+     findAllByProductIdInAndStatus(
+             List<Long> productIds,
+             SellerProductStatus status);
+
+     List<SellerProduct>
+     findAllByProductIdIn(
+             List<Long> productIds);
 }
