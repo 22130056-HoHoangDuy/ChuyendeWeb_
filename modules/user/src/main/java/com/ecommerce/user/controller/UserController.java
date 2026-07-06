@@ -50,7 +50,9 @@ public class UserController {
 
             String avatarUrl = cloudinaryService.uploadImage(file);
 
-            UserUpdateReq updateReq = new UserUpdateReq(null, avatarUrl, null, null);
+            // Sửa tại đây: Thêm null cho tham số AddressDto thứ 5
+            UserUpdateReq updateReq = new UserUpdateReq(null, avatarUrl, null, null, null);
+
             userService.updateProfile(email, updateReq);
 
             return ResponseEntity.ok(Map.of(

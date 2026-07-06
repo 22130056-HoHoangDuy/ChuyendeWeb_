@@ -4,38 +4,31 @@ import ProductCard from "../components/ProductCard";
 import { getHomeProducts } from "../services/productService";
 
 function HomePage() {
-
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const loadProducts = async () => {
+            try {
+                setLoading(true);
+                const data = await getHomeProducts();
+                console.log("Products:", data);
+                setProducts(data);
+            } catch (error) {
+                console.error("Lỗi lấy sản phẩm:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         loadProducts();
     }, []);
-
-    const loadProducts = async () => {
-        try {
-            const data = await getHomeProducts();
-
-            console.log("Products:", data);
-
-            setProducts(data);
-        } catch (error) {
-            console.error("Lỗi lấy sản phẩm:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <>
             <HeroBanner />
-
             <div className="container mt-5">
-
-                <h2 className="mb-4">
-                    Sản phẩm nổi bật
-                </h2>
-
+                <h2 className="mb-4">Sản phẩm nổi bật</h2>
                 {loading ? (
                     <h5>Đang tải sản phẩm...</h5>
                 ) : (
@@ -48,7 +41,6 @@ function HomePage() {
                         ))}
                     </div>
                 )}
-
             </div>
         </>
     );

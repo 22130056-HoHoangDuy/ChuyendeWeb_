@@ -1,6 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // 1. Import thêm useNavigate
 
 function Navbar() {
+    const navigate = useNavigate(); // 2. Khởi tạo hook điều hướng
+
+    // 3. Viết hàm xử lý sự kiện Đăng xuất
+    const handleLogout = () => {
+        // Xóa token khỏi bộ nhớ
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
+        // Đẩy người dùng về trang đăng nhập
+        navigate('/login');
+    };
+
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
             <div className="container">
@@ -38,7 +50,7 @@ function Navbar() {
                         </button>
                     </Link>
 
-                    {/* Nút Giỏ hàng hiện tại */}
+                    {/* Nút Giỏ hàng */}
                     <Link
                         to="/cart"
                         className="text-decoration-none"
@@ -47,6 +59,14 @@ function Navbar() {
                             🛒 Giỏ hàng
                         </button>
                     </Link>
+
+                    {/* Nút Đăng xuất */}
+                    <button
+                        onClick={handleLogout}
+                        className="btn btn-outline-danger"
+                    >
+                        🚪 Đăng xuất
+                    </button>
 
                 </div>
 

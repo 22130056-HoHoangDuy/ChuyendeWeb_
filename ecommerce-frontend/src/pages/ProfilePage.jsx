@@ -5,18 +5,22 @@ import './ProfilePage.css';
 const ProfilePage = () => {
     const [profile, setProfile] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({
-        fullName: '',
-        phone: '',
-        age: '',
-        avatar: ''
-    });
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
-
+    const [formData, setFormData] = useState({
+        fullName: '', phone: '', age: '', avatar: '',
+        country: '', province: '', district: '', street: '', houseNumber: '' // Thêm các trường địa chỉ
+    });
     const navigate = useNavigate();
+    useEffect(() => {
+        if (message.text) {
+            const timer = setTimeout(() => {
+                setMessage({ type: '', text: '' });
+            }, 4000); // 4000ms = 4 giây
 
-    // 1. BỌC HÀM BẰNG useCallback để React lưu lại tham chiếu của hàm
+            return () => clearTimeout(timer);
+        }
+    }, [message.text]);
     const fetchProfile = useCallback(async () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
@@ -36,16 +40,19 @@ const ProfilePage = () => {
             if (response.ok) {
                 const data = await response.json();
                 setProfile(data);
+                const firstAddress = (data.addresses && data.addresses.length > 0) ? data.addresses[0] : {};
+
                 setFormData({
                     fullName: data.fullName || '',
                     phone: data.phone || '',
                     age: data.age || '',
-                    avatar: data.avatar || ''
+                    avatar: data.avatar || '',
+                    country: firstAddress.country || '',
+                    province: firstAddress.province || '',
+                    district: firstAddress.district || '',
+                    street: firstAddress.street || '',
+                    houseNumber: firstAddress.houseNumber || ''
                 });
-            } else if (response.status === 401 || response.status === 403) {
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                navigate('/login');
             }
         } catch (error) {
             console.error("Lỗi lấy thông tin:", error);
@@ -118,7 +125,14 @@ const ProfilePage = () => {
                     fullName: formData.fullName,
                     phone: formData.phone,
                     age: formData.age === '' ? null : parseInt(formData.age),
-                    avatar: formData.avatar
+                    avatar: formData.avatar,
+                    address: { // <--- Đối tượng này khớp với cấu trúc mong đợi của Backend
+                        country: formData.country,
+                        province: formData.province,
+                        district: formData.district,
+                        street: formData.street,
+                        houseNumber: formData.houseNumber
+                    }
                 })
             });
 
@@ -163,6 +177,7 @@ const ProfilePage = () => {
                             )}
 
                             <form onSubmit={handleUpdateProfile}>
+                                {/* Phần thông tin cơ bản hiện có */}
                                 <div className="mb-3">
                                     <label className="form-label text-muted small fw-bold">HỌ VÀ TÊN</label>
                                     <input
@@ -200,6 +215,41 @@ const ProfilePage = () => {
                                     </div>
                                 </div>
 
+                                {/* BỔ SUNG: Phần nhập Địa chỉ */}
+                                <h5 className="mt-5 mb-3 fw-bold text-muted border-bottom pb-2">ĐỊA CHỈ GIAO HÀNG</h5>
+
+                                <div className="row mb-3">
+                                    <div className="col-md-6">
+                                        <label className="form-label text-muted small fw-bold">QUỐC GIA</label>
+                                        <input type="text" className="form-control" name="country"
+                                               value={formData.country} onChange={handleInputChange} disabled={!isEditing} />
+                                    </div>
+                                    <div className="col-md-6 mt-3 mt-md-0">
+                                        <label className="form-label text-muted small fw-bold">TỈNH / THÀNH PHỐ</label>
+                                        <input type="text" className="form-control" name="province"
+                                               value={formData.province} onChange={handleInputChange} disabled={!isEditing} />
+                                    </div>
+                                </div>
+
+                                <div className="row mb-4">
+                                    <div className="col-md-4">
+                                        <label className="form-label text-muted small fw-bold">QUẬN / HUYỆN</label>
+                                        <input type="text" className="form-control" name="district"
+                                               value={formData.district} onChange={handleInputChange} disabled={!isEditing} />
+                                    </div>
+                                    <div className="col-md-5 mt-3 mt-md-0">
+                                        <label className="form-label text-muted small fw-bold">TÊN ĐƯỜNG</label>
+                                        <input type="text" className="form-control" name="street"
+                                               value={formData.street} onChange={handleInputChange} disabled={!isEditing} />
+                                    </div>
+                                    <div className="col-md-3 mt-3 mt-md-0">
+                                        <label className="form-label text-muted small fw-bold">SỐ NHÀ</label>
+                                        <input type="text" className="form-control" name="houseNumber"
+                                               value={formData.houseNumber} onChange={handleInputChange} disabled={!isEditing} />
+                                    </div>
+                                </div>
+
+                                {/* Ảnh đại diện */}
                                 {isEditing && (
                                     <div className="mb-4">
                                         <label className="form-label text-muted small fw-bold">ẢNH ĐẠI DIỆN MỚI</label>
@@ -213,6 +263,7 @@ const ProfilePage = () => {
                                     </div>
                                 )}
 
+                                {/* Nút bấm */}
                                 <div className="d-flex justify-content-end gap-2 mt-4">
                                     {isEditing ? (
                                         <>

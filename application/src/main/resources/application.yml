@@ -24,12 +24,19 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         physical_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
+#  flyway:
+#    enabled: true
+#    baseline-on-migrate: true
+#    locations: classpath:db/migration
+#    clean-on-validation-error: false
+#    clean-disabled: true
   flyway:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
     clean-on-validation-error: false
     clean-disabled: true
+    repair-at-start: true  # Thêm dòng này vào
 
   mail:
     host: smtp.gmail.com
