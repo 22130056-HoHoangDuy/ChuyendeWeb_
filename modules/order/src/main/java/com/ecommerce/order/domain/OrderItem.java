@@ -28,7 +28,4 @@ public class OrderItem {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Long getSellerId() {
-        return sellerProductId;
-    }
 }
