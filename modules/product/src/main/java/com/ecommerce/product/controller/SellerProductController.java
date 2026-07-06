@@ -30,21 +30,6 @@ public class SellerProductController {
                                 sellerId));
     }
 
-    @GetMapping("/dashboard")
-    public ResponseEntity<?> dashboard(
-            Authentication authentication
-    ) {
-
-        Long sellerId =
-                Long.valueOf(
-                        authentication.getName());
-
-        return ResponseEntity.ok(
-                sellerProductService
-                        .getDashboard(
-                                sellerId));
-    }
-
     @PutMapping("/products/{id}")
     public ResponseEntity<?> updateProduct(
             Authentication authentication,

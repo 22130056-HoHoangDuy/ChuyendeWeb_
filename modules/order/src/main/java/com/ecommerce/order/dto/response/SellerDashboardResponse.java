@@ -1,12 +1,12 @@
-package com.ecommerce.product.dto.response;
+package com.ecommerce.order.dto.response;
 
 public record SellerDashboardResponse(
 
         Double totalRevenue,
 
-        Integer totalProducts,
-
         Integer totalOrders,
+
+        Integer totalProducts,
 
         Integer totalSold,
 

@@ -3,7 +3,6 @@ package com.ecommerce.product.service.impl;
 import com.ecommerce.product.domain.Product;
 import com.ecommerce.product.domain.SellerProduct;
 import com.ecommerce.product.dto.request.SellerProductRequest;
-import com.ecommerce.product.dto.response.SellerDashboardResponse;
 import com.ecommerce.product.dto.response.SellerProductResponse;
 import com.ecommerce.product.enums.SellerProductStatus;
 import com.ecommerce.product.repository.ProductRepository;
@@ -33,15 +32,13 @@ public class SellerProductServiceImpl
 
         List<SellerProduct> products =
                 sellerProductRepository
-                        .findAllBySellerId(
-                                sellerId);
+                        .findAllBySellerId(sellerId);
 
         Map<Long, Product> productMap =
                 productRepository
                         .findAllById(
                                 products.stream()
-                                        .map(
-                                                SellerProduct::getProductId)
+                                        .map(SellerProduct::getProductId)
                                         .toList())
                         .stream()
                         .collect(
@@ -91,36 +88,10 @@ public class SellerProductServiceImpl
     }
 
     @Override
-    public SellerDashboardResponse
-    getDashboard(Long sellerId) {
+    public SellerProductResponse createProduct(
+            Long sellerId,
+            SellerProductRequest request) {
 
-        List<SellerProduct> products =
-                sellerProductRepository
-                        .findAllBySellerId(
-                                sellerId);
-
-        Double revenue = 0.0;
-
-        Integer totalProducts =
-                products.size();
-
-        Integer totalOrders = 0;
-
-        Integer totalSold = 0;
-
-        Double avgRating = 0.0;
-
-        return new SellerDashboardResponse(
-                revenue,
-                totalProducts,
-                totalOrders,
-                totalSold,
-                avgRating
-        );
-    }
-
-    @Override
-    public SellerProductResponse createProduct(Long sellerId, SellerProductRequest request) {
         return null;
     }
 
@@ -129,8 +100,7 @@ public class SellerProductServiceImpl
     public SellerProductResponse updateProduct(
             Long sellerId,
             Long sellerProductId,
-            SellerProductRequest request
-    ) {
+            SellerProductRequest request) {
 
         SellerProduct sellerProduct =
                 sellerProductRepository
@@ -186,8 +156,7 @@ public class SellerProductServiceImpl
     public void changeStatus(
             Long sellerId,
             Long sellerProductId,
-            boolean active
-    ) {
+            boolean active) {
 
         SellerProduct sellerProduct =
                 sellerProductRepository
@@ -214,8 +183,7 @@ public class SellerProductServiceImpl
     @Transactional
     public void deleteProduct(
             Long sellerId,
-            Long sellerProductId
-    ) {
+            Long sellerProductId) {
 
         SellerProduct sellerProduct =
                 sellerProductRepository
@@ -229,6 +197,7 @@ public class SellerProductServiceImpl
                     "Bạn không có quyền");
         }
 
+        // soft delete
         sellerProduct.setStatus(
                 SellerProductStatus.INACTIVE);
 

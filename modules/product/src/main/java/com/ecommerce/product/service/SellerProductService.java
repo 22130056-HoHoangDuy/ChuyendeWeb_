@@ -9,9 +9,6 @@ public interface SellerProductService {
     List<SellerProductResponse>
     getMyProducts(Long sellerId);
 
-    SellerDashboardResponse
-    getDashboard(Long sellerId);
-
     SellerProductResponse createProduct(
             Long sellerId,
             SellerProductRequest request);
