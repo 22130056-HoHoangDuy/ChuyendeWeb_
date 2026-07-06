@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import HeroBanner from "../components/HeroBanner";
-import ProductCard from "../components/ProductCard";
-import { getHomeProducts } from "../services/productService";
+import HeroBanner from "../../components/HeroBanner.jsx";
+import ProductCard from "../../components/ProductCard.jsx";
+import { getHomeProducts } from "../../services/productService.js";
 
 function HomePage() {
 

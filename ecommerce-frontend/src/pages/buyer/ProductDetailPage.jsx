@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { getProductDetail } from "../services/productService";
+import { getProductDetail } from "../../services/productService.js";
 
 function ProductDetailPage() {
 
