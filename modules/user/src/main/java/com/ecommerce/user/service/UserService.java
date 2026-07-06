@@ -25,4 +25,6 @@ public interface UserService {
     List<User> findAllByRole(String role);
 
     Long findIdByEmail(String name);
+
+    List<User> getAllUsers();
 }

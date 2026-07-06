@@ -1,14 +1,16 @@
 package com.ecommerce.order.service.impl;
 
-import com.ecommerce.order.domain.ReturnRequest;
-import com.ecommerce.order.domain.ReturnRefund; // Thêm import
 import com.ecommerce.order.domain.OrderItem;
+import com.ecommerce.order.domain.ReturnRefund;
+import com.ecommerce.order.domain.ReturnRequest;
+import com.ecommerce.order.enums.RefundStatus;
 import com.ecommerce.order.enums.ReturnStatus;
-import com.ecommerce.order.enums.RefundStatus; // Thêm import
 import com.ecommerce.order.repository.OrderItemRepository;
+import com.ecommerce.order.repository.ReturnRefundRepository;
 import com.ecommerce.order.repository.ReturnRequestRepository;
-import com.ecommerce.order.repository.ReturnRefundRepository; // Thêm import
 import com.ecommerce.order.service.ReturnService;
+import com.ecommerce.product.domain.SellerProduct;
+import com.ecommerce.product.repository.SellerProductRepository;
 import com.ecommerce.user.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,21 +27,37 @@ public class ReturnServiceImpl implements ReturnService {
     private final OrderItemRepository orderItemRepository;
     private final ReturnRefundRepository refundRepository;
     private final WalletService walletService;
+    private final SellerProductRepository sellerProductRepository;
 
     @Override
     @Transactional
-    public ReturnRequest createReturnRequest(Long userId, Long orderItemId, String reason, String evidence) {
+    public ReturnRequest createReturnRequest(
+            Long userId,
+            Long orderItemId,
+            String reason,
+            String evidence) {
+
         OrderItem item = orderItemRepository.findById(orderItemId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy món hàng trong đơn hàng"));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Không tìm thấy món hàng trong đơn hàng"));
 
         if (returnRepository.existsByOrderItemId(orderItemId)) {
-            throw new RuntimeException("Sản phẩm này đã được gửi yêu cầu khiếu nại trước đó!");
+            throw new RuntimeException(
+                    "Sản phẩm này đã được gửi yêu cầu khiếu nại trước đó!");
         }
+
+        SellerProduct sellerProduct =
+                sellerProductRepository
+                        .findById(item.getSellerProductId())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Không tìm thấy sản phẩm"));
 
         ReturnRequest request = ReturnRequest.builder()
                 .orderItemId(orderItemId)
                 .customerId(userId)
-                .sellerId(item.getSellerId())
+                .sellerId(sellerProduct.getSellerId())
                 .returnReason(reason)
                 .evidenceImageUrls(evidence)
                 .status(ReturnStatus.PENDING)
@@ -53,43 +71,77 @@ public class ReturnServiceImpl implements ReturnService {
     @Override
     @Transactional
     public void approveAndRefund(Long requestId) {
+
         ReturnRequest request = returnRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Yêu cầu khiếu nại không tồn tại"));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Yêu cầu khiếu nại không tồn tại"));
 
         if (request.getStatus() != ReturnStatus.PENDING) {
-            throw new RuntimeException("Yêu cầu này đã được xử lý rồi!");
+            throw new RuntimeException(
+                    "Yêu cầu này đã được xử lý rồi!");
         }
 
-        OrderItem item = orderItemRepository.findById(request.getOrderItemId())
-                .orElseThrow(() -> new RuntimeException("Dữ liệu món hàng không khớp"));
+        OrderItem item =
+                orderItemRepository
+                        .findById(request.getOrderItemId())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Dữ liệu món hàng không khớp"));
 
-        double refundAmount = item.getPrice() * item.getQuantity();
+        SellerProduct sellerProduct =
+                sellerProductRepository
+                        .findById(item.getSellerProductId())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Không tìm thấy sản phẩm"));
 
-        walletService.changeBalance(item.getSellerId(), -refundAmount);
-        walletService.changeBalance(request.getCustomerId(), refundAmount);
+        double refundAmount =
+                item.getPrice() * item.getQuantity();
 
-        ReturnRefund refund = ReturnRefund.builder()
-                .returnRequestId(requestId)
-                .refundAmount(refundAmount)
-                .status(RefundStatus.COMPLETED)
-                .requestDate(LocalDateTime.now())
-                .build();
+        // trừ tiền người bán
+        walletService.changeBalance(
+                sellerProduct.getSellerId(),
+                -refundAmount);
+
+        // hoàn tiền khách
+        walletService.changeBalance(
+                request.getCustomerId(),
+                refundAmount);
+
+        ReturnRefund refund =
+                ReturnRefund.builder()
+                        .returnRequestId(requestId)
+                        .refundAmount(refundAmount)
+                        .status(RefundStatus.COMPLETED)
+                        .requestDate(LocalDateTime.now())
+                        .build();
+
         refundRepository.save(refund);
 
         request.setStatus(ReturnStatus.APPROVED);
         request.setUpdatedAt(LocalDateTime.now());
+
         returnRepository.save(request);
     }
 
     @Override
     @Transactional
-    public void rejectRequest(Long requestId, String adminNote) {
-        ReturnRequest request = returnRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Yêu cầu không tồn tại"));
+    public void rejectRequest(
+            Long requestId,
+            String adminNote) {
+
+        ReturnRequest request =
+                returnRepository
+                        .findById(requestId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Yêu cầu không tồn tại"));
 
         request.setStatus(ReturnStatus.REJECTED);
         request.setNote(adminNote);
         request.setUpdatedAt(LocalDateTime.now());
+
         returnRepository.save(request);
     }
 
@@ -99,7 +151,9 @@ public class ReturnServiceImpl implements ReturnService {
     }
 
     @Override
-    public List<ReturnRequest> getRequestsByCustomerId(Long userId) {
+    public List<ReturnRequest> getRequestsByCustomerId(
+            Long userId) {
+
         return returnRepository.findAllByCustomerId(userId);
     }
 }
