@@ -27,7 +27,24 @@ public class A_UserController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> getAllUsersByRole(@RequestParam String role) {
-        return ResponseEntity.ok(userService.findAllByRole(role));
+    public ResponseEntity<?> getUsers(
+            @RequestParam(required = false)
+            String role) {
+
+        if (role != null) {
+            return ResponseEntity.ok(
+                    userService.findAllByRole(role));
+        }
+
+        return ResponseEntity.ok(
+                userService.getAllUsers());
+    }
+    // detail user
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUser(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                userService.getProfileById(id));
     }
 }
