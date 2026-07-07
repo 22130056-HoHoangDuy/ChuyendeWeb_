@@ -32,8 +32,11 @@ public class SharedSecurityConfig {
 //                        .requestMatchers("/payments/callback/**").permitAll()
 //                        .requestMatchers("/api/v1/products/active", "/api/v1/products/detail/**").permitAll()
 //                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-
+                                // Trong SharedSecurityConfig.java
+                                .requestMatchers("/api/v1/cart/**").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
+
+                                .requestMatchers("/api/v1/paymentsinit").permitAll()
                                 .requestMatchers("/api/v1/payments/callback/**").permitAll() // Thêm prefix cho đồng bộ
                                 .requestMatchers("/api/v1/payments/webhook/**").permitAll()  // Cho phép Provider gọi vào Webhook
                                 .requestMatchers("/api/v1/products/active", "/api/v1/products/detail/**").permitAll()

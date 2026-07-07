@@ -6,5 +6,6 @@ public record UserUpdateReq(
         @Nullable String fullName,
         @Nullable String avatar,
         @Nullable Integer age,
-        @Nullable String phone
+        @Nullable String phone,
+        @Nullable AddressDto address
 ) {}
