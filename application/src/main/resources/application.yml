@@ -9,14 +9,14 @@ spring:
     name: chuyende-web
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ecommerce_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/children_room_store?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -36,7 +36,6 @@ spring:
     locations: classpath:db/migration
     clean-on-validation-error: false
     clean-disabled: true
-    repair-at-start: true  # Thêm dòng này vào
 
   mail:
     host: smtp.gmail.com
