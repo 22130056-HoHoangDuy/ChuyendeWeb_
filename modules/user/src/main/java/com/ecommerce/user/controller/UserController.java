@@ -1,5 +1,6 @@
 package com.ecommerce.user.controller;
 
+import com.ecommerce.common.service.CloudinaryService;
 import com.ecommerce.user.domain.User;
 import com.ecommerce.user.dto.request.*;
 import com.ecommerce.user.dto.response.AuthResponse;
@@ -11,15 +12,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
 public class UserController {
     private final UserService userService;
+    private final CloudinaryService cloudinaryService;
 
     @PutMapping("/update_profile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UserUpdateReq request, Principal principal) {
@@ -35,6 +40,32 @@ public class UserController {
         User user=userService.getProfile(email);
         UserProfileResponse u= UserProfileResponse.fromEntity(user);
         return ResponseEntity.ok(u);
+    }
+
+    @PostMapping("/upload-avatar")
+    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file, Principal principal) {
+        try {
+            String email = principal.getName();
+            log.info("Yêu cầu tải lên avatar mới cho user: {}", email);
+
+            String avatarUrl = cloudinaryService.uploadImage(file);
+
+            // Sửa tại đây: Thêm null cho tham số AddressDto thứ 5
+            UserUpdateReq updateReq = new UserUpdateReq(null, avatarUrl, null, null, null);
+
+            userService.updateProfile(email, updateReq);
+
+            return ResponseEntity.ok(Map.of(
+                    "avatar", avatarUrl,
+                    "message", "Cập nhật ảnh thành công!"
+            ));
+
+        } catch (Exception e) {
+            log.error("Lỗi upload ảnh: ", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Lỗi khi tải ảnh lên máy chủ!"
+            ));
+        }
     }
 
 

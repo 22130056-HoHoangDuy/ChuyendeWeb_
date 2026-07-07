@@ -1,5 +1,6 @@
 package com.ecommerce.user.service.impl;
 
+import com.ecommerce.user.domain.Address;
 import com.ecommerce.user.domain.User;
 import com.ecommerce.user.dto.request.ChangePasswordReq;
 import com.ecommerce.user.dto.request.UserUpdateReq;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getProfile(String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailWithAddresses(email)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
     }
 
@@ -45,7 +47,30 @@ public class UserServiceImpl implements UserService {
         if (request.phone() != null && !request.phone().isBlank()) {
             user.setPhone(request.phone());
         }
+        if (request.address() != null) {
+            if (user.getAddresses() == null) {
+                user.setAddresses(new ArrayList<>());
+            }
 
+            if (user.getAddresses().isEmpty()) {
+                Address newAddress = Address.builder()
+                        .country(request.address().country())
+                        .province(request.address().province())
+                        .district(request.address().district())
+                        .street(request.address().street())
+                        .houseNumber(request.address().houseNumber())
+                        .user(user) // Quan trọng: Liên kết với user hiện tại
+                        .build();
+                user.getAddresses().add(newAddress);
+            } else {
+                Address existing = user.getAddresses().get(0);
+                existing.setCountry(request.address().country());
+                existing.setProvince(request.address().province());
+                existing.setDistrict(request.address().district());
+                existing.setStreet(request.address().street());
+                existing.setHouseNumber(request.address().houseNumber());
+            }
+        }
         return userRepository.save(user);
     }
 
