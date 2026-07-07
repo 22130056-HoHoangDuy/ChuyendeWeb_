@@ -2,3 +2,131 @@ GET http://localhost:8081/api/v1/products/active
 
 ###
 GET http://localhost:8081/api/v1/products/detail/4
+
+### GET HOME PRODUCT
+GET http://localhost:8081/api/v1/products/active
+
+### GET PRODUCT DETAIL
+GET http://localhost:8081/api/v1/products/detail/4
+
+### FILTER ALL
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+}
+
+### FILTER KEYWORD
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "keyword": "tủ"
+}
+
+### FILTER CATEGORY
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "categoryId": 1
+}
+
+### FILTER ORIGIN
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "origin": "Việt Nam"
+}
+
+### FILTER SIZE
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "size": "M"
+}
+
+### FILTER MIN PRICE
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "minPrice": 100000
+}
+
+### FILTER PRICE RANGE
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "minPrice": 100000,
+  "maxPrice": 1000000
+}
+
+### FILTER IN STOCK
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "inStock": true
+}
+
+### SORT PRICE ASC
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "sortBy": "PRICE_ASC"
+}
+
+### SORT PRICE DESC
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "sortBy": "PRICE_DESC"
+}
+
+### SORT RATING
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "sortBy": "RATING_DESC"
+}
+
+### SORT NEWEST
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "sortBy": "NEWEST"
+}
+
+### PAGINATION
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "page": 0,
+  "sizePage": 5
+}
+
+### FULL FILTER
+POST http://localhost:8081/api/v1/products/filter
+Content-Type: application/json
+
+{
+  "keyword": "tủ",
+  "categoryId": 1,
+  "origin": "Việt Nam",
+  "size": "M",
+  "minPrice": 100000,
+  "maxPrice": 3000000,
+  "inStock": true,
+  "sortBy": "PRICE_ASC",
+  "page": 0,
+  "sizePage": 10
+}

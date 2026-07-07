@@ -124,5 +124,10 @@ public class UserServiceImpl implements UserService {
         return user.getId();
     }
 
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
 
 }
