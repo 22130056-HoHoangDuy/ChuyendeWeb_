@@ -136,3 +136,152 @@ CREATE TABLE addresses (
 
 CREATE INDEX idx_address_user
     ON addresses(user_id);
+
+-- =====================================================
+-- TABLE: wallets
+-- =====================================================
+
+CREATE TABLE wallets (
+
+                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+                         user_id BIGINT NOT NULL,
+
+                         balance DOUBLE NOT NULL DEFAULT 0.0,
+
+                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                             ON UPDATE CURRENT_TIMESTAMP,
+
+                         CONSTRAINT uk_wallet_user
+                             UNIQUE(user_id),
+
+                         CONSTRAINT fk_wallet_user
+                             FOREIGN KEY (user_id)
+                                 REFERENCES users(id)
+                                 ON DELETE CASCADE
+);
+
+CREATE INDEX idx_wallet_user
+    ON wallets(user_id);
+
+-- =====================================================
+-- TABLE: conversations
+-- =====================================================
+
+CREATE TABLE conversations (
+
+                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+                               buyer_id BIGINT NOT NULL,
+
+                               seller_id BIGINT NOT NULL,
+
+                               last_message_at TIMESTAMP NULL,
+
+                               CONSTRAINT fk_conversation_buyer
+                                   FOREIGN KEY (buyer_id)
+                                       REFERENCES users(id)
+                                       ON DELETE CASCADE,
+
+                               CONSTRAINT fk_conversation_seller
+                                   FOREIGN KEY (seller_id)
+                                       REFERENCES users(id)
+                                       ON DELETE CASCADE
+);
+
+CREATE INDEX idx_conversation_buyer
+    ON conversations(buyer_id);
+
+CREATE INDEX idx_conversation_seller
+    ON conversations(seller_id);
+
+CREATE INDEX idx_conversation_last_message
+    ON conversations(last_message_at);
+
+-- =====================================================
+-- TABLE: messages
+-- =====================================================
+
+CREATE TABLE messages (
+
+                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+                          conversation_id BIGINT NOT NULL,
+
+                          sender_id BIGINT NOT NULL,
+
+                          content TEXT NOT NULL,
+
+                          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                          CONSTRAINT fk_message_conversation
+                              FOREIGN KEY (conversation_id)
+                                  REFERENCES conversations(id)
+                                  ON DELETE CASCADE,
+
+                          CONSTRAINT fk_message_sender
+                              FOREIGN KEY (sender_id)
+                                  REFERENCES users(id)
+                                  ON DELETE CASCADE
+);
+
+CREATE INDEX idx_message_conversation
+    ON messages(conversation_id);
+
+CREATE INDEX idx_message_sender
+    ON messages(sender_id);
+
+CREATE INDEX idx_message_created
+    ON messages(created_at);
+
+-- =====================================================
+-- TABLE: notifications
+-- =====================================================
+
+CREATE TABLE notifications (
+
+                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+                               user_id BIGINT NOT NULL,
+
+                               title VARCHAR(255) NOT NULL,
+
+                               message TEXT,
+
+                               type ENUM(
+        'ORDER_CREATED',
+        'ORDER_CONFIRMED',
+        'ORDER_DELIVERING',
+        'ORDER_COMPLETED',
+        'PAYMENT_SUCCESS',
+        'PAYMENT_FAILED',
+        'SYSTEM'
+    ) NOT NULL,
+
+                               is_read BOOLEAN NOT NULL DEFAULT FALSE,
+
+                               created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                               CONSTRAINT fk_notification_user
+                                   FOREIGN KEY (user_id)
+                                       REFERENCES users(id)
+                                       ON DELETE CASCADE
+);
+
+-- =====================================================
+-- INDEX
+-- =====================================================
+
+CREATE INDEX idx_notification_user
+    ON notifications(user_id);
+
+CREATE INDEX idx_notification_type
+    ON notifications(type);
+
+CREATE INDEX idx_notification_read
+    ON notifications(is_read);
+
+CREATE INDEX idx_notification_created
+    ON notifications(created_at);
