@@ -7,6 +7,7 @@ import com.ecommerce.user.domain.User;
 import com.ecommerce.user.dto.request.AuthRequest;
 import com.ecommerce.user.dto.request.RegisterRequest;
 import com.ecommerce.user.dto.response.AuthResponse;
+import com.ecommerce.user.enums.RoleName;
 import com.ecommerce.user.repository.RoleRepository;
 import com.ecommerce.user.repository.UserRepository;
 import com.ecommerce.user.service.AuthService;
@@ -39,10 +40,10 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Email này đã được sử dụng!");
         }
 
-        Role defaultRole = roleRepository.findByRoleName("ROLE_BUYER");
-        if (defaultRole == null) {
-            throw new RuntimeException("Không tìm thấy ROLE_BUYER trong hệ thống.");
-        }
+        Role defaultRole = roleRepository
+                .findByRoleName(RoleName.ROLE_BUYER)
+                .orElseThrow(() ->
+                        new RuntimeException("Không tìm thấy ROLE_BUYER"));
 
         User user = User.builder()
                 .email(request.email())

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SharedSecurityConfig {
 
@@ -42,6 +44,7 @@ public class SharedSecurityConfig {
                  *   ROLE_BUYER
                  */
                 .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers("/api/v1/auth/**").permitAll()
 
                         .requestMatchers(
@@ -52,11 +55,23 @@ public class SharedSecurityConfig {
                         .requestMatchers("/api/v1/payments/callback/**").permitAll()
                         .requestMatchers("/api/v1/payments/webhook/**").permitAll()
 
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // ADMIN
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasRole("ADMIN")
+
+                        // SELLER
+                        .requestMatchers(HttpMethod.POST, "/api/v1/products/**")
+                        .hasRole("SELLER")
+
+                        // BUYER
+                        .requestMatchers("/api/v1/orders/**")
+                        .hasRole("BUYER")
+
+                        .requestMatchers("/api/v1/payments/**")
+                        .hasRole("BUYER")
 
                         .anyRequest().authenticated()
                 );
-
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
