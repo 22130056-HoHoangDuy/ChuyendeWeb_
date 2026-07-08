@@ -159,7 +159,6 @@ CREATE INDEX idx_order_item_product
 -- =====================================================
 -- TABLE: reviews
 -- =====================================================
-
 CREATE TABLE reviews (
 
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -176,7 +175,7 @@ CREATE TABLE reviews (
 
                          request_date TIMESTAMP,
 
-                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                          updated_at TIMESTAMP NULL DEFAULT NULL
         ON UPDATE CURRENT_TIMESTAMP,
