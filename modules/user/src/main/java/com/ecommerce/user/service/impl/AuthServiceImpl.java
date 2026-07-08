@@ -61,7 +61,11 @@ public class AuthServiceImpl implements AuthService {
                 .map(Role::getName)
                 .toList();
 
-        String accessToken = jwtProvider.generateToken(user.getEmail(), authorities);
+        String accessToken = jwtProvider.generateToken(
+                user.getId(),
+                user.getEmail(),
+                authorities
+        );
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
         return new AuthResponse(
@@ -104,8 +108,14 @@ public class AuthServiceImpl implements AuthService {
                 .map(Role::getName)
                 .toList();
 
-        String accessToken = jwtProvider.generateToken(user.getEmail(), authorities);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
+        String accessToken = jwtProvider.generateToken(
+                user.getId(),
+                user.getEmail(),
+                authorities
+        );
+
+        RefreshToken refreshToken =
+                refreshTokenService.createRefreshToken(user.getEmail());
 
         log.info("Đăng nhập thành công cho: {}", user.getEmail());
 

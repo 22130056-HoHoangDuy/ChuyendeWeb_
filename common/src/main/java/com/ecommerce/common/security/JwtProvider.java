@@ -30,9 +30,14 @@ public class JwtProvider {
     /**
      * Generate JWT containing authenticated user's authorities.
      */
-    public String generateToken(String email, List<String> authorities) {
+    public String generateToken(
+            Long userId,
+            String email,
+            List<String> authorities
+    ) {
         return Jwts.builder()
                 .subject(email)
+                .claim("uid", userId)
                 .claim("roles", authorities)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
@@ -63,6 +68,21 @@ public class JwtProvider {
      */
     public String getEmailFromToken(String token) {
         return parseClaims(token).getSubject();
+    }
+
+
+    public Long getUserIdFromToken(String token) {
+        Object uid = parseClaims(token).get("uid");
+
+        if (uid instanceof Integer value) {
+            return value.longValue();
+        }
+
+        if (uid instanceof Long value) {
+            return value;
+        }
+
+        return Long.parseLong(uid.toString());
     }
 
     /**

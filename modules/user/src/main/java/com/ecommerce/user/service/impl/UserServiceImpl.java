@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateUserActive(String email) {
         User user = getProfile(email);
-        if (!user.getEnabled()) {
+        if (!user.isEnabled()) {
             throw new RuntimeException("Tài khoản của bạn đã bị Admin vô hiệu hóa!");
         }
     }

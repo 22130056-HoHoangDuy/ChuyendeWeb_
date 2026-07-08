@@ -33,11 +33,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
 
             String email = jwtProvider.getEmailFromToken(token);
+            Long userId = jwtProvider.getUserIdFromToken(token);
             List<GrantedAuthority> authorities = jwtProvider.getAuthoritiesFromToken(token);
+
+            CurrentUserPrincipal principal =
+                    new CurrentUserPrincipal(
+                            userId,
+                            email,
+                            authorities
+                    );
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            email,
+                            principal,
                             null,
                             authorities
                     );
