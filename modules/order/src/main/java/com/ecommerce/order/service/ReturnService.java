@@ -4,7 +4,7 @@ import com.ecommerce.order.domain.ReturnRequest;
 import java.util.List;
 
 public interface ReturnService {
-    ReturnRequest createReturnRequest(Long userId, Long orderItemId, String reason, String evidence);
+    ReturnRequest createReturnRequest(Long buyerId, Long orderItemId, String reason, String evidence);
 
     List<ReturnRequest> getAllRequests();
 

@@ -1,11 +1,14 @@
 package com.ecommerce.order.service.impl;
 
+import com.ecommerce.order.domain.Order;
 import com.ecommerce.order.domain.OrderItem;
 import com.ecommerce.order.domain.ReturnRefund;
 import com.ecommerce.order.domain.ReturnRequest;
+import com.ecommerce.order.enums.OrderStatus;
 import com.ecommerce.order.enums.RefundStatus;
 import com.ecommerce.order.enums.ReturnStatus;
 import com.ecommerce.order.repository.OrderItemRepository;
+import com.ecommerce.order.repository.OrderRepository;
 import com.ecommerce.order.repository.ReturnRefundRepository;
 import com.ecommerce.order.repository.ReturnRequestRepository;
 import com.ecommerce.order.service.ReturnService;
@@ -28,11 +31,12 @@ public class ReturnServiceImpl implements ReturnService {
     private final ReturnRefundRepository refundRepository;
     private final WalletService walletService;
     private final SellerProductRepository sellerProductRepository;
+    private final OrderRepository orderRepository;
 
     @Override
     @Transactional
     public ReturnRequest createReturnRequest(
-            Long userId,
+            Long buyerId,
             Long orderItemId,
             String reason,
             String evidence) {
@@ -41,22 +45,43 @@ public class ReturnServiceImpl implements ReturnService {
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Không tìm thấy món hàng trong đơn hàng"));
+        Order order = orderRepository.findById(item.getOrderId())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Không tìm thấy đơn hàng"));
+
+        if (!order.getUserId().equals(buyerId)) {
+            throw new RuntimeException(
+                    "Bạn không có quyền gửi khiếu nại cho đơn hàng này");
+        }
 
         if (returnRepository.existsByOrderItemId(orderItemId)) {
             throw new RuntimeException(
                     "Sản phẩm này đã được gửi yêu cầu khiếu nại trước đó!");
+        }
+        // Không cho trả hàng
+        if (order.getOrderStatus() != OrderStatus.DELIVERED) {
+            throw new RuntimeException(
+                    "Chỉ được khiếu nại đơn hàng đã giao thành công");
         }
 
         SellerProduct sellerProduct =
                 sellerProductRepository
                         .findById(item.getSellerProductId())
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Không tìm thấy sản phẩm"));
+                                new RuntimeException("Không tìm thấy sản phẩm"));
+
+        // Nhập hàng về kho
+        sellerProduct.setStock(
+                sellerProduct.getStock()
+                        + item.getQuantity()
+        );
+
+        sellerProductRepository.save(sellerProduct);
 
         ReturnRequest request = ReturnRequest.builder()
                 .orderItemId(orderItemId)
-                .customerId(userId)
+                .customerId(buyerId)
                 .sellerId(sellerProduct.getSellerId())
                 .returnReason(reason)
                 .evidenceImageUrls(evidence)
