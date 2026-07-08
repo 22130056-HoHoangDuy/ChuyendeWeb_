@@ -6,7 +6,7 @@
 INSERT INTO roles (id, role_name)
 VALUES (1, 'ROLE_ADMIN'),
        (2, 'ROLE_SELLER'),
-       (3, 'ROLE_BUYER');
+       (3, 'ROLE_CUSTOMER');
 -- =====================================================
 -- PART 1.2
 -- USERS
