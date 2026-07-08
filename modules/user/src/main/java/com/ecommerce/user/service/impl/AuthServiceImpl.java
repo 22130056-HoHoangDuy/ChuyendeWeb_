@@ -26,80 +26,56 @@ import java.util.Set;
 public class AuthServiceImpl implements AuthService {
 
     private final PasswordEncoder passwordEncoder;
-     private final UserRepository userRepository;
-     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
     private final RoleRepository roleRepository;
-//    @Transactional
-//    @Override
-//    public AuthResponse register(RegisterRequest request) {
-//        if (userRepository.findByEmail(request.email()).isPresent()) {
-//            throw new RuntimeException("Email này đã được sử dụng!");
-//        }
-//        Role defaultRole = roleRepository.findByRoleName("ROLE_CUSTOMER");
-//        if(defaultRole == null)throw new RuntimeException("Không tìm thấy role");
-//        User user = User.builder()
-//                .email(request.email())
-//                .password(passwordEncoder.encode(request.password()))
-//                .fullName(request.fullName())
-//                .enabled(true)
-//                .roles(Set.of( defaultRole))
-//                .build();
-//        List<String> rolesForToken = user.getRoles().stream()
-//                .map(r -> String.valueOf(r.getName()))
-//                .toList();
-//        userRepository.save(user);
-//        log.info("Đã đăng ký thành công user mới: {}", user.getEmail());
-//
-//        String accessToken = jwtProvider.generateToken(user.getEmail(),rolesForToken);
-//        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
-//
-//        return new AuthResponse(
-//                accessToken,
-//                refreshToken.getToken(),
-//                user.getEmail(),
-//                "Đăng ký thành công!"
-//        );
-//    }
-@Transactional
-@Override
-public AuthResponse register(RegisterRequest request) {
-    if (userRepository.findByEmail(request.email()).isPresent()) {
-        throw new RuntimeException("Email này đã được sử dụng!");
+
+    @Transactional
+    @Override
+    public AuthResponse register(RegisterRequest request) {
+
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new RuntimeException("Email này đã được sử dụng!");
+        }
+
+        Role defaultRole = roleRepository.findByRoleName("ROLE_BUYER");
+        if (defaultRole == null) {
+            throw new RuntimeException("Không tìm thấy ROLE_BUYER trong hệ thống.");
+        }
+
+        User user = User.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .fullName(request.fullName())
+                .phone(request.phone())
+                .enabled(true)
+                .roles(Set.of(defaultRole))
+                .build();
+
+        userRepository.save(user);
+
+        log.info("Đã đăng ký thành công user mới: {}", user.getEmail());
+
+        List<String> authorities = user.getRoles().stream()
+                .map(Role::getName)
+                .toList();
+
+        String accessToken = jwtProvider.generateToken(user.getEmail(), authorities);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
+
+        return new AuthResponse(
+                accessToken,
+                refreshToken.getToken(),
+                user.getEmail(),
+                "Đăng ký thành công!"
+        );
     }
 
-    Role defaultRole = roleRepository.findByRoleName("ROLE_CUSTOMER");
-    if(defaultRole == null) throw new RuntimeException("Không tìm thấy role");
-
-    User user = User.builder()
-            .email(request.email())
-            .password(passwordEncoder.encode(request.password()))
-            .fullName(request.fullName())
-            .phone(request.phone())
-            .enabled(true)
-            .roles(Set.of(defaultRole))
-            .build();
-
-    userRepository.save(user);
-    log.info("Đã đăng ký thành công user mới: {}", user.getEmail());
-
-    List<String> rolesForToken = user.getRoles().stream()
-            .map(r -> String.valueOf(r.getName()))
-            .toList();
-
-    String accessToken = jwtProvider.generateToken(user.getEmail(), rolesForToken);
-    RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
-
-    return new AuthResponse(
-            accessToken,
-            refreshToken.getToken(),
-            user.getEmail(),
-            "Đăng ký thành công!"
-    );
-}
     @Override
     public AuthResponse authenticate(AuthRequest request) {
-        log.info("phương thức xấc thực : {}", request.email());
+        log.info("Phương thức xác thực: {}", request.email());
+
         return switch (request.authType()) {
             case PASSWORD -> handlePasswordLogin(request);
             case OTP -> handleOTPLogin(request);
@@ -112,6 +88,7 @@ public AuthResponse register(RegisterRequest request) {
     }
 
     private AuthResponse handlePasswordLogin(AuthRequest request) {
+
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại!"));
 
@@ -122,13 +99,16 @@ public AuthResponse register(RegisterRequest request) {
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new RuntimeException("Sai mật khẩu");
         }
-        List<String> roles = user.getRoles().stream()
+
+        List<String> authorities = user.getRoles().stream()
                 .map(Role::getName)
                 .toList();
-        String accessToken = jwtProvider.generateToken(user.getEmail(),roles);
+
+        String accessToken = jwtProvider.generateToken(user.getEmail(), authorities);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
         log.info("Đăng nhập thành công cho: {}", user.getEmail());
+
         return new AuthResponse(
                 accessToken,
                 refreshToken.getToken(),
@@ -138,9 +118,13 @@ public AuthResponse register(RegisterRequest request) {
     }
 
     private AuthResponse handleOTPLogin(AuthRequest request) {
-        log.info("đã gửi mã OTP tới email: {}", request.email());
-        return new AuthResponse(null, null, request.email(), "Mã OTP đã được gửi tới Email của bạn");
+        log.info("Đã gửi mã OTP tới email: {}", request.email());
+
+        return new AuthResponse(
+                null,
+                null,
+                request.email(),
+                "Mã OTP đã được gửi tới Email của bạn"
+        );
     }
-
-
 }
