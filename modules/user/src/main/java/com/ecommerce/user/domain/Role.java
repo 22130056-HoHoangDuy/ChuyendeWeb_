@@ -4,6 +4,8 @@ import com.ecommerce.user.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "roles")
@@ -15,7 +17,8 @@ public class Role {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role_name", nullable = false)
+    @Column(name = "role_name", nullable = false, length = 100)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private RoleName roleName;
 
     public String getName() {
