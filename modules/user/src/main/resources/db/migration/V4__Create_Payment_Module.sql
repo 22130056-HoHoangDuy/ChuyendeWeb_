@@ -153,7 +153,7 @@ CREATE TABLE stored_payment_methods (
 
                                         CONSTRAINT fk_stored_payment_user
                                             FOREIGN KEY (buyer_id)
-                                                REFERENCES users(buyer_id)
+                                                REFERENCES users(id)
                                                 ON DELETE CASCADE
 );
 

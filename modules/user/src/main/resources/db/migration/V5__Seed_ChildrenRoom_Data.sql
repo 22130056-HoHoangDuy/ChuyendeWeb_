@@ -1003,7 +1003,7 @@ VALUES
 
 INSERT INTO notifications
 (id,
- user_id,
+ receiver_id,
  title,
  message,
  type,

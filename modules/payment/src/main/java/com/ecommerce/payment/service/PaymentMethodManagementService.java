@@ -7,7 +7,7 @@ import com.ecommerce.payment.repository.PaymentStoredMethodRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;@RequiredArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class PaymentMethodManagementService {
     private final PaymentStoredMethodRepository paymentStoredMethodRepository;
@@ -25,7 +25,7 @@ public class PaymentMethodManagementService {
                 command.externalToken()
         );
 
-        boolean hasAnyMethod = paymentStoredMethodRepository.existsByUserId(userId);
+        boolean hasAnyMethod = paymentStoredMethodRepository.existsByBuyerId(userId);
         if (command.makeDefault() || !hasAnyMethod) {
             handleSetDefault(userId, newMethod);
         }
@@ -67,8 +67,10 @@ public class PaymentMethodManagementService {
         paymentStoredMethodRepository.delete(paymentMethod);
     }
 
-    private void handleSetDefault(Long userId, StoredPaymentMethod newDefault) {
-        paymentStoredMethodRepository.findByUserIdAndIsDefaultTrue(userId)
+    private void handleSetDefault(Long buyerId, StoredPaymentMethod newDefault) {
+
+        paymentStoredMethodRepository
+                .findByBuyerIdAndIsDefaultTrue(buyerId)
                 .ifPresent(StoredPaymentMethod::unsetDefault);
 
         newDefault.setDefault();
