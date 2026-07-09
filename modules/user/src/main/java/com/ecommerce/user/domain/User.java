@@ -8,9 +8,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 @Entity
 @Table(name = "users")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,9 +47,6 @@ public class User {
         createdAt = LocalDateTime.now();
     }
 
-    public boolean getEnabled() {
-        return enabled;
-    }
     @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -54,7 +56,4 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    public boolean isEnabled() {
-        return enabled;
-    }
 }

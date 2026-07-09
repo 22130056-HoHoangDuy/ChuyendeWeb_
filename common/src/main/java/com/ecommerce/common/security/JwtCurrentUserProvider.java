@@ -10,11 +10,46 @@ public class JwtCurrentUserProvider implements CurrentUserProvider {
 
     @Override
     public Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) return null;
 
-        String email = auth.getName();
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
 
-        return 6L;
+        if (authentication == null ||
+                !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal =
+                authentication.getPrincipal();
+
+        if (principal instanceof CurrentUserPrincipal currentUser) {
+            return currentUser.userId();
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getCurrentUserEmail() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        if (authentication == null ||
+                !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CurrentUserPrincipal currentUser) {
+            return currentUser.email();
+        }
+
+        return null;
     }
 }

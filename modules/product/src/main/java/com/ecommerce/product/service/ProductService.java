@@ -24,7 +24,11 @@ public interface ProductService {
     @Transactional
     void deleteProduct(Long id);
 
-    List<ProductHomeResponse> getAllActiveForHomePage(Long userId);
+    List<ProductHomeResponse> getAllActiveForHomePage(Long buyerId);
+
+    Page<ProductHomeResponse> filterProducts(
+            ProductFilterRequest request,
+            Long buyerId);
 
     List<Product> searchSemantic(List<Double> queryVector);
 
@@ -38,8 +42,4 @@ public interface ProductService {
     List<SellerProduct> getAllForAdmin();
 
     ProductDetailResponse getProductDetail(Long id);
-
-    Page<ProductHomeResponse> filterProducts(
-            ProductFilterRequest request,
-            Long userId);
 }

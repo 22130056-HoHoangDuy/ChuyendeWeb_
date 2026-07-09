@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface NotificationService {
     List<NotificationResponse> getNotifications(
-            Long userId
+            Long receiverId
     );
 }

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
-public class PasswordController {
+public class AuthController {
 
     private final PasswordResetService passwordResetService;
     private final AuthService authService;

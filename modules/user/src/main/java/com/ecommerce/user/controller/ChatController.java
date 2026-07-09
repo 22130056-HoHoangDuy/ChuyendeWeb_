@@ -1,12 +1,11 @@
 package com.ecommerce.user.controller;
 
+import com.ecommerce.common.security.CurrentUserProvider;
 import com.ecommerce.user.service.ChatService;
 import com.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -14,12 +13,15 @@ import java.security.Principal;
 public class ChatController {
     private final ChatService chatService;
     private final UserService userService;
+    private final CurrentUserProvider currentUserProvider;
+
     @PostMapping("/send")
-    public ResponseEntity<?> send(Principal principal,
-                                  @RequestParam Long receiverId,
-                                  @RequestBody String content
-                                ) {
-        Long senderId = userService.findIdByEmail(principal.getName());
+    public ResponseEntity<?> send(
+            @RequestParam Long receiverId,
+            @RequestBody String content
+    ) {
+        Long senderId =
+                currentUserProvider.getCurrentUserId();
         return ResponseEntity.ok(chatService.sendMessage(senderId, receiverId, content));
     }
 
@@ -29,9 +31,10 @@ public class ChatController {
     }
 
     @GetMapping("/conversations")
-    public ResponseEntity<?> getConversations(Principal principal) {
+    public ResponseEntity<?> getConversations() {
 
-        Long userId = userService.findIdByEmail(principal.getName());
+        Long userId =
+                currentUserProvider.getCurrentUserId();
 
         return ResponseEntity.ok(
                 chatService.getUserConversations(userId)
