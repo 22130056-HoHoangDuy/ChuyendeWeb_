@@ -38,7 +38,7 @@ public class PaymentMethodManagementService {
         StoredPaymentMethod method = paymentStoredMethodRepository.findById(methodId)
                 .orElseThrow(() -> new RuntimeException("Payment method not found"));
 
-        if (!method.getUserId().equals(userId)) {
+        if (!method.getBuyerId().equals(userId)) {
             throw new RuntimeException("NOT_ENOUGH_PERMISSION");
         }
 
@@ -49,7 +49,7 @@ public class PaymentMethodManagementService {
     // Đổi UUID methodId thành Long methodId
     public void setDefaultPaymentMethod(Long userId, Long methodId) {
         StoredPaymentMethod newDefault = paymentStoredMethodRepository.findById(methodId)
-                .filter(m -> m.getUserId().equals(userId))
+                .filter(m -> m.getBuyerId().equals(userId))
                 .orElseThrow(() -> new RuntimeException("Payment method not found"));
 
         handleSetDefault(userId, newDefault);
@@ -60,7 +60,7 @@ public class PaymentMethodManagementService {
         var paymentMethod = paymentStoredMethodRepository.findById(paymentMethodId)
                 .orElseThrow(() -> new RuntimeException("Payment method not found"));
 
-        if (!paymentMethod.getUserId().equals(userId)) {
+        if (!paymentMethod.getBuyerId().equals(userId)) {
             throw new RuntimeException("NOT_ENOUGH_PERMISSION");
         }
 

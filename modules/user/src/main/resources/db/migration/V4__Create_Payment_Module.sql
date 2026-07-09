@@ -129,7 +129,7 @@ CREATE TABLE stored_payment_methods (
 
                                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-                                        user_id BIGINT NOT NULL,
+                                        buyer_id BIGINT NOT NULL,
 
                                         provider ENUM(
         'MOMO',
@@ -152,8 +152,8 @@ CREATE TABLE stored_payment_methods (
                                             UNIQUE(provider, external_token),
 
                                         CONSTRAINT fk_stored_payment_user
-                                            FOREIGN KEY (user_id)
-                                                REFERENCES users(id)
+                                            FOREIGN KEY (buyer_id)
+                                                REFERENCES users(buyer_id)
                                                 ON DELETE CASCADE
 );
 
@@ -162,7 +162,7 @@ CREATE TABLE stored_payment_methods (
 -- =====================================================
 
 CREATE INDEX idx_payment_method_user
-    ON stored_payment_methods(user_id);
+    ON stored_payment_methods(buyer_id);
 
 CREATE INDEX idx_payment_method_provider
     ON stored_payment_methods(provider);

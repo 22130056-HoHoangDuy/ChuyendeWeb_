@@ -17,11 +17,11 @@ public class NotificationServiceImpl
 
     @Override
     public List<NotificationResponse> getNotifications(
-            Long userId
+            Long receiverId
     ) {
 
         return notificationRepository
-                .findByUserIdOrderByCreatedAtDesc(userId)
+                .findByUserIdOrderByCreatedAtDesc(receiverId)
                 .stream()
                 .map(notification ->
                         NotificationResponse.builder()
