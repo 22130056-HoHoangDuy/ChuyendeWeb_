@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/admin/returns")
 @RequiredArgsConstructor
-public class A_ReturnController {
+public class AdminReturnController {
 
     private final ReturnService returnService;
 

@@ -120,7 +120,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public List<ProductHomeResponse> getAllActiveForHomePage(Long userId) {
+    public List<ProductHomeResponse> getAllActiveForHomePage(Long buyerId) {
 
         List<SellerProduct> sellerProducts =
                 sellerProductRepository.findAllByStatus(
@@ -146,9 +146,9 @@ public class ProductServiceImpl implements ProductService {
                         );
 
         Set<Long> favoriteSellerProductIds =
-                userId != null
+                buyerId != null
                         ? wishlistService
-                        .getFavoriteSellerProductIds(userId)
+                        .getFavoriteSellerProductIds(buyerId)
                         : Set.of();
 
         Map<Long, Double> ratingMap =
@@ -236,7 +236,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ProductHomeResponse> filterProducts(
             ProductFilterRequest request,
-            Long userId
+            Long buyerId
     ) {
 
         // STEP 1: filter Product
@@ -294,9 +294,9 @@ public class ProductServiceImpl implements ProductService {
 
         // STEP 5: wishlist
         Set<Long> favoriteSellerProductIds =
-                userId != null
+                buyerId != null
                         ? wishlistService
-                        .getFavoriteSellerProductIds(userId)
+                        .getFavoriteSellerProductIds(buyerId)
                         : Set.of();
         Map<Long, Double> ratingMap =
                 reviewRepository

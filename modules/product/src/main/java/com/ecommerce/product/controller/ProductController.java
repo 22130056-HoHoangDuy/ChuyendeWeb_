@@ -1,5 +1,6 @@
 package com.ecommerce.product.controller;
 
+import com.ecommerce.common.security.CurrentUserProvider;
 import com.ecommerce.product.dto.request.ProductFilterRequest;
 import com.ecommerce.product.dto.request.ProductRequest;
 import com.ecommerce.product.dto.response.ProductHomeResponse;
@@ -7,7 +8,6 @@ import com.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +19,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final CurrentUserProvider currentUserProvider;
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ProductRequest request) {
@@ -36,18 +37,18 @@ public class ProductController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<List<ProductHomeResponse>> getHomeProducts(Authentication authentication) {
-        Long userId = null;
-        if (authentication != null && authentication.isAuthenticated()) {
-            try {
-                userId = Long.valueOf(authentication.getName());
-                log.info(userId.toString());
-            } catch (Exception e) {
-                userId = null;
-            }
+    public ResponseEntity<List<ProductHomeResponse>> getHomeProducts() {
+
+        Long buyerId = null;
+
+        try {
+            buyerId = currentUserProvider.getCurrentUserId();
+        } catch (Exception ignored) {
         }
 
-        List<ProductHomeResponse> responses = productService.getAllActiveForHomePage(userId);
+        List<ProductHomeResponse> responses =
+                productService.getAllActiveForHomePage(buyerId);
+
         return ResponseEntity.ok(responses);
     }
 
@@ -65,25 +66,20 @@ public class ProductController {
 
     @PostMapping("/filter")
     public ResponseEntity<?> filter(
-            @RequestBody ProductFilterRequest request,
-            Authentication authentication
+            @RequestBody ProductFilterRequest request
     ) {
 
-        Long userId = null;
+        Long buyerId = null;
 
-        if (authentication != null &&
-                authentication.isAuthenticated()) {
-
-            try {
-                userId = Long.valueOf(authentication.getName());
-            } catch (Exception ignored) {
-            }
+        try {
+            buyerId = currentUserProvider.getCurrentUserId();
+        } catch (Exception ignored) {
         }
 
         return ResponseEntity.ok(
                 productService.filterProducts(
                         request,
-                        userId
+                        buyerId
                 )
         );
     }

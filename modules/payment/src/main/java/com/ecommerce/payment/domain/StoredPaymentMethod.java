@@ -32,7 +32,7 @@ public class StoredPaymentMethod {
     private Long id;
 
     @Column(nullable = false)
-    private Long userId;
+    private Long buyerId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -53,14 +53,13 @@ public class StoredPaymentMethod {
 
 
     public StoredPaymentMethod(
-            Long userId,
+            Long buyerId,
             PaymentProvider provider,
             String externalToken
     ) {
         if (externalToken == null || externalToken.isBlank()) {
             throw new RuntimeException("Invalid payment provider token");
         }
-        this.userId = userId;
         this.provider = provider;
         this.externalToken = externalToken;
         this.status = StoredPaymentMethodStatus.ACTIVE;

@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/A_User")
+@RequestMapping("/api/v1/admin/users")
 @RequiredArgsConstructor
-public class A_UserController {
+public class AdminUserController {
 
     private final UserService userService;
 

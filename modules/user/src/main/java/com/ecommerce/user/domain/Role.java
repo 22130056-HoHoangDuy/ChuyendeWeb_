@@ -1,24 +1,27 @@
 package com.ecommerce.user.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.ecommerce.user.enums.RoleName;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "roles")
+@Getter
+@Setter
 public class Role {
-    @Getter
-    @Setter
-    @jakarta.persistence.Id
+
+    @Id
     private Long id;
 
-    @Column(name = "role_name")
-    private String roleName;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role_name", nullable = false, length = 100)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    private RoleName roleName;
 
     public String getName() {
-        return roleName;
+        return roleName.name();
     }
 }

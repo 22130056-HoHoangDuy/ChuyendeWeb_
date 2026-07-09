@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from "../api.js";
+import api from "../../api.js"; // Lùi 2 cấp thư mục để ra src
 
 const CartPage = () => {
     const [cart, setCart] = useState(null);

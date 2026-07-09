@@ -7,9 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/A_Order") // Admin Order
+@RequestMapping("/api/v1/admin/orders") // Admin Order
 @RequiredArgsConstructor
-public class A_OrderController {
+public class AdminOrderController {
 
     private final OrderService orderService;
 

@@ -6,7 +6,10 @@ import com.ecommerce.order.enums.OrderStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface OrderService {
-    Order createOrder(OrderRequest request, String email);
+    Order createOrder(
+            OrderRequest request,
+            Long buyerId
+    );
 
     @Transactional
     Order checkout(Long userId, String shippingAddress);
