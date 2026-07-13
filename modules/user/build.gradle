@@ -3,7 +3,6 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Cấp Driver MariaDB cho Plugin Flyway để thực hiện được lệnh Clean
         classpath 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
         classpath 'org.flywaydb:flyway-mysql:10.10.0'
     }
@@ -28,6 +27,7 @@ flyway {
 }
 
 dependencies {
+    implementation project(':modules:product')
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
     implementation project(':common')
 
@@ -44,4 +44,6 @@ dependencies {
     // Thư viện Flyway
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
+
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }

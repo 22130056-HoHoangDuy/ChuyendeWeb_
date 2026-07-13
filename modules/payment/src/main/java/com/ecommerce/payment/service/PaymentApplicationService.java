@@ -9,6 +9,7 @@ import com.ecommerce.payment.enums.PaymentTransactionStatus;
 import com.ecommerce.payment.enums.PaymentTransactionType;
 import com.ecommerce.payment.port.PaymentGatewayStrategy;
 import com.ecommerce.payment.repository.PaymentSessionRepository;
+import com.ecommerce.payment.dto.response.PaymentHistoryProjection;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -44,7 +46,6 @@ public class PaymentApplicationService {
         return strategy.createPaymentUrl(session);
     }
 
-
     @Transactional
     public void processPaymentResult(Map<String, String> params, PaymentProvider provider) {
         Long sessionId = extractSessionId(params, provider);
@@ -58,7 +59,6 @@ public class PaymentApplicationService {
 
         if (isValid) {
             String gatewayTxnId = provider == PaymentProvider.VNPAY ? params.get("vnp_TransactionNo") : params.get("token");
-
             String providerRef = provider == PaymentProvider.VNPAY ? params.get("vnp_BankCode") : params.get("PayerID");
 
             PaymentTransaction transaction = PaymentTransaction.builder()
@@ -83,7 +83,6 @@ public class PaymentApplicationService {
         }
     }
 
-
     private Long extractSessionId(Map<String, String> params, PaymentProvider provider) {
         try {
             String rawId = switch (provider) {
@@ -102,5 +101,11 @@ public class PaymentApplicationService {
             log.error("Lỗi trích xuất Session ID từ {}: {}", provider, e.getMessage());
             throw new RuntimeException("Lỗi trích xuất Session ID từ " + provider);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaymentHistoryProjection> getPaymentsByUserId(Long userId) {
+        log.info(">>>> [SERVICE] Đang tải lịch sử giao dịch trực tuyến cho User ID: {}", userId);
+        return sessionRepository.findPaymentHistoryByUserId(userId);
     }
 }

@@ -13,7 +13,7 @@ import org.springframework.data.annotation.Id;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "conversations")
+@Table(name = "conversation")
 @Data
 @Builder
 @NoArgsConstructor
@@ -26,6 +26,7 @@ public class Conversation {
 
     private Long buyerId;
     private Long sellerId;
+    private Long productSellerId;
 
     private LocalDateTime lastMessageAt;
 

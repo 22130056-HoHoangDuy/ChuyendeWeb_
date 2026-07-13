@@ -2,6 +2,7 @@ package com.ecommerce.payment.domain;
 
 
 import com.ecommerce.payment.enums.PaymentSessionStatus;
+import com.ecommerce.payment.enums.PaymentStatusConverter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @Table(name = "payment_sessions")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PaymentSession {
+public class  PaymentSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Database tự sinh ID
@@ -36,7 +37,8 @@ public class PaymentSession {
     @JoinColumn(name = "session_id")
     private List<PaymentTransaction> transactions = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
+    @Convert(converter = PaymentStatusConverter.class)
     @Column(nullable = false)
     private PaymentSessionStatus status;
 

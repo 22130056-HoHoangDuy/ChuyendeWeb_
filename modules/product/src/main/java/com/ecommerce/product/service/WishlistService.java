@@ -16,5 +16,11 @@ public interface WishlistService {
     Set<Long> getFavoriteSellerProductIds(Long userId);
     boolean isFavorite(Long userId, Long sellerProductId);
 
+    List<ProductResponseDTO> getProductsWithFavoriteStatus(Long userId);
+
 //    List<ProductResponseDTO> getProductsWithFavoriteStatus(Long userId);
+// Thêm dòng này vào cuối file WishlistService.java
+List<com.ecommerce.product.dto.response.ProductHomeResponse> getFavoriteProductsForUser(Long userId);
+
+    void deleteBySellerProductId(Long id);
 }

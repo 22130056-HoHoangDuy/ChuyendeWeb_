@@ -6,6 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(ProductSyncListener.class)
 @Table(name = "seller_products")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class SellerProduct {
@@ -31,6 +32,9 @@ public class SellerProduct {
     @Column(name = "stock", nullable = false)
     private Integer stock;
 
+    @Column(name = "unit", length = 50)
+    private String unit;
+
     @Column(name = "sku", nullable = false, length = 255)
     private String sku;
 
@@ -51,6 +55,9 @@ public class SellerProduct {
         if (this.status == null) {
             this.status = SellerProductStatus.ACTIVE;
         }
+        if (this.unit == null || this.unit.trim().isEmpty()) {
+            this.unit = "kg";
+        }
     }
 
     @PreUpdate
@@ -58,4 +65,15 @@ public class SellerProduct {
         updatedAt = LocalDateTime.now();
     }
 
+    public Long getSellerProductId() {
+        return productId;
+    }
+
+    public String getProductName() {
+        return this.name;
+    }
+
+    public String getAvatar() {
+        return this.imageUrl;
+    }
 }

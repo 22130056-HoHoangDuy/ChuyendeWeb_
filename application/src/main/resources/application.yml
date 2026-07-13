@@ -1,17 +1,26 @@
 server:
-  port: ${SERVER_PORT:8081}
+  port: ${SERVER_PORT:8080}
   address: 0.0.0.0
   servlet:
     context-path: /
 
 spring:
   application:
-    name: chuyende-web
+    name: ecommerce-semantic-search
+
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 5s
+
+  data:
+    elasticsearch:
+      repositories:
+        enabled: false
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/ecomhub_db?createDatabaseIfNotExist=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -21,28 +30,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
-        physical_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        database-platform: org.hibernate.dialect.MySQL5Dialect
 
-#  flyway:
-#    enabled: true
-#    baseline-on-migrate: true
-#    locations: classpath:db/migration
-#    clean-on-validation-error: false
-#    clean-disabled: true
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    baseline-on-migrate: true # Cho phép dùng baseline
     locations: classpath:db/migration
-    clean-on-validation-error: false
-    clean-disabled: true
-    repair-at-start: true  # Thêm dòng này vào
-
+    repair-on-fail: true
   mail:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    password: nkux nvdd ymbt uglj
     properties:
       mail:
         smtp:
@@ -63,22 +62,20 @@ logging:
 
 payment:
   exchange-rate:
-    vnd-to-usd: ${VND_TO_USD_RATE:25000}
-
+    vnd-to-usd: 25450.00
   momo:
-    partner-code: ${MOMO_PARTNER_CODE}
-    access-key: ${MOMO_ACCESS_KEY}
-    secret-key: ${MOMO_SECRET_KEY}
+    partner-code: MOMO
+    access-key: F8BBA842ECF85
+    secret-key: K951B6PE1waDMi640xX08PD3vg6EkVlz
     endpoint: "https://test-payment.momo.vn/v2/gateway/api/create"
-    callback-url: ${NGROK_URL}/api/v1/payments/webhook/momo
-    return-url: ${NGROK_URL}/payment-success
-
+    callback-url: https://napping-squash-majorette.ngrok-free.dev/api/v1/payments/webhook/momo
+    return-url: https://napping-squash-majorette.ngrok-free.dev/payment-success
   vnpay:
-    tmn-code: ${VNPAY_TMN_CODE}
-    hash-secret: ${VNPAY_HASH_SECRET} 
+    tmn-code: EJBUYER8
+    hash-secret: MN9VXSQGKWYIZYSQEHEJ80UJARUF6ZKY
     url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
-    ipn-url: ${NGROK_URL}/api/v1/payments/webhook/vnpay
-    return-url: ${NGROK_URL}/api/v1/payments/callback/vnpay
+    ipn-url: https://napping-squash-majorette.ngrok-free.dev/api/v1/payments/webhook/vnpay
+    return-url: https://napping-squash-majorette.ngrok-free.dev/api/v1/payments/callback/vnpay
   paypal:
     client-id: ${PAYPAL_CLIENT_ID:ATvecIiYFU-JhsFYDSXegNHU84Gvyn53hokG-ckbasgjT9c4wfrmOl9Bdo8YS5ahJC3OsEZrqKPTZc5V}
     client-secret: ${PAYPAL_CLIENT_SECRET:EFcHyHJVqAQBSRpjj_ik9h_yhzNBa74UWgAKvtPpthIXI9FYm0Nqi9uPbyIZ14LZAVsqTy2-hj5lsj7A}
@@ -87,10 +84,7 @@ payment:
     return-url: https://napping-squash-majorette.ngrok-free.dev/api/v1/payments/callback/paypal
     cancel-url: https://napping-squash-majorette.ngrok-free.dev/payment-cancel
 
-#  paypal:
-#    client-id: ${PAYPAL_CLIENT_ID}
-#    client-secret: ${PAYPAL_CLIENT_SECRET}
-#    mode: ${PAYPAL_MODE:sandbox}
-#    base-url: "https://api-m.sandbox.paypal.com"
-#    return-url: ${NGROK_URL}/api/v1/payments/callback/paypal
-#    cancel-url: ${NGROK_URL}/payment-cancel
+cloudinary:
+  cloud-name: dxz9mhmjz
+  api-key: 187124779552252
+  api-secret: ZZDOEKnrO69_53YWCMiBBBk5U3A

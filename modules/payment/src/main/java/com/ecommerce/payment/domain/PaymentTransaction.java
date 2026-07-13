@@ -2,6 +2,7 @@ package com.ecommerce.payment.domain;
 
 import com.ecommerce.payment.enums.PaymentProvider;
 import com.ecommerce.payment.enums.PaymentTransactionStatus;
+import com.ecommerce.payment.enums.PaymentTransactionStatusConverter;
 import com.ecommerce.payment.enums.PaymentTransactionType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,7 +28,6 @@ public class PaymentTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // THAY ĐỔI QUAN TRỌNG: Dùng Object thay vì Long ID để hỗ trợ Builder và JPA Relationship
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
     private PaymentSession session;
@@ -40,7 +40,8 @@ public class PaymentTransaction {
     @Column(nullable = false, length = 20)
     private PaymentTransactionType type;
 
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
+@Convert(converter = PaymentTransactionStatusConverter.class)
     @Column(nullable = false, length = 20)
     private PaymentTransactionStatus status;
 

@@ -1,13 +1,13 @@
 package com.ecommerce.user.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+
 @Entity
 @Table(name = "users")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -19,6 +19,7 @@ public class User {
     @Column(unique = true, nullable = false, length = 100)
     private String email;
 
+    @JsonIgnore //
     private String password;
 
     @Column(name = "full_name")
@@ -27,9 +28,6 @@ public class User {
     private String avatar;
     private Integer age;
     private String phone;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Address> addresses = new ArrayList<>();
 
     @Builder.Default
     private boolean enabled = true;
@@ -37,16 +35,14 @@ public class User {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Tránh vòng lặp vô tận khi serialize JSON
+    private Set<Address> addresses = new HashSet<>();
 
-    public boolean getEnabled() {
-        return enabled;
-    }
     @Builder.Default
     @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -54,7 +50,18 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
     public boolean isEnabled() {
         return enabled;
+    }
+
+
+    public void addAddress(Address address) {
+        addresses.add(address);
+        address.setUser(this);
     }
 }

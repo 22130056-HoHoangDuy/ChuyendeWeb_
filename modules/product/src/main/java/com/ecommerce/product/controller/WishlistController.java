@@ -1,9 +1,10 @@
 package com.ecommerce.product.controller;
 
-import com.ecommerce.product.domain.Product;
+import com.ecommerce.common.security.JwtCurrentUserProvider; // 🌟 Inject provider stateless
 import com.ecommerce.product.dto.response.ProductResponseDTO;
 import com.ecommerce.product.service.WishlistService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,24 +16,21 @@ import java.util.List;
 public class WishlistController {
 
     private final WishlistService wishlistService;
+    private final JwtCurrentUserProvider currentUserProvider;
 
-    @PostMapping("/{productId}/toggle")
-    public ResponseEntity<?> toggleWishlist(@RequestParam Long userId, @PathVariable Long productId) {
-        wishlistService.toggleWishlist(userId, productId);
+    @PostMapping("/{sellerProductId}/toggle")
+    public ResponseEntity<?> toggleWishlist(@PathVariable Long sellerProductId) {
+        Long userId = currentUserProvider.getCurrentUserId();
+        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Vui lòng đăng nhập!");
+
+        wishlistService.toggleWishlist(userId, sellerProductId);
         return ResponseEntity.ok("Đã cập nhật danh sách yêu thích");
     }
 
     @GetMapping("/my-list")
-    public ResponseEntity<?> getMyWishlist(@RequestParam Long userId) {
-        return ResponseEntity.ok(wishlistService.getMyWishlist(userId));
+    public ResponseEntity<?> getMyWishlist() {
+        Long userId = currentUserProvider.getCurrentUserId(); //
+        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Vui lòng đăng nhập!");
+        return ResponseEntity.ok(wishlistService.getFavoriteProductsForUser(userId));
     }
-
-    @GetMapping("/{productId}/check")
-    public ResponseEntity<Boolean> checkFavorite(@RequestParam Long userId, @PathVariable Long productId) {
-        return ResponseEntity.ok(wishlistService.isFavorite(userId, productId));
-    }
-//    @GetMapping("/products")
-//    public ResponseEntity<List<ProductResponseDTO>> getProductsForUser(@RequestParam Long userId) {
-//        return ResponseEntity.ok(wishlistService.getProductsWithFavoriteStatus(userId));
-//    }
 }

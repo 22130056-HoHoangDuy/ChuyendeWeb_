@@ -22,6 +22,9 @@ public class ReturnRefund {
     @Column(name = "refund_amount", nullable = false)
     private Double refundAmount;
 
+    @Column(name = "refund_proof_url", length = 500)
+    private String refundProofUrl;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     @Column(name = "status")

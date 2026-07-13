@@ -4,6 +4,7 @@ package com.ecommerce.payment.controller;
 import com.ecommerce.common.security.CurrentUserProvider;
 import com.ecommerce.payment.dto.command.AddPaymentMethodCommand;
 import com.ecommerce.payment.dto.request.PaymentInitRequest;
+import com.ecommerce.payment.dto.response.PaymentHistoryProjection;
 import com.ecommerce.payment.enums.PaymentProvider;
 import com.ecommerce.payment.service.PaymentApplicationService;
 import com.ecommerce.payment.service.PaymentMethodManagementService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,6 +27,7 @@ public class PaymentController {
     private final PaymentMethodManagementService paymentMethodManagementService;
     private final PaymentApplicationService paymentService;
     private final CurrentUserProvider currentUserProvider;
+    private final PaymentApplicationService paymentApplicationService;
 
     @PostMapping("/methods")
     public ResponseEntity<Void> addPaymentMethod(@RequestBody @Valid AddPaymentMethodCommand command) {
@@ -66,34 +69,34 @@ public class PaymentController {
     }
 
 
-    @GetMapping("/callback/paypal")
-    public ResponseEntity<Map<String, String>> handlePayPalReturn(@RequestParam Map<String, String> allParams) {
+    @GetMapping(value = "/callback/paypal", produces = org.springframework.http.MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> handlePayPalReturn(@RequestParam Map<String, String> allParams) {
         log.info("PayPal Return received with params: {}", allParams);
 
         try {
             paymentService.processPaymentResult(allParams, PaymentProvider.PAYPAL);
-            return ResponseEntity.ok(allParams);
+            return ResponseEntity.ok(getSuccessHtml("PayPal"));
 
         } catch (Exception e) {
             log.error("PayPal processing error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(allParams);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("<html><body><h1>Lỗi xử lý giao dịch PayPal!</h1></body></html>");
         }
     }
 
-
-
-
-    @GetMapping("/callback/vnpay")
-    public ResponseEntity<Map<String, String>> handleVNPayReturn(@RequestParam Map<String, String> allParams) {
+    @GetMapping(value = "/callback/vnpay", produces = org.springframework.http.MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> handleVNPayReturn(@RequestParam Map<String, String> allParams) {
         log.info("VNPAY Return received with params: {}", allParams);
 
         try {
             paymentService.processPaymentResult(allParams, PaymentProvider.VNPAY);
-            return ResponseEntity.ok(allParams);
+
+            return ResponseEntity.ok(getSuccessHtml("VNPAY"));
 
         } catch (Exception e) {
             log.error("VNPAY processing error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(allParams);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("<html><body><h1>Lỗi xử lý giao dịch VNPAY!</h1></body></html>");
         }
     }
 
@@ -115,5 +118,10 @@ public class PaymentController {
                "<h1 style='color: #28a745;'>Thanh toán " + provider + " thành công!</h1>" +
                "<p>Đơn hàng của bạn đang được xử lý. Bạn có thể đóng cửa sổ này.</p>" +
                "</body></html>";
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PaymentHistoryProjection>> getPaymentHistory(@PathVariable Long userId) {
+        return ResponseEntity.ok(paymentApplicationService.getPaymentsByUserId(userId));
     }
 }

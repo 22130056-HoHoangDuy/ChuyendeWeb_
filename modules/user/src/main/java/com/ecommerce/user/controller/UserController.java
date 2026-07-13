@@ -1,30 +1,25 @@
 package com.ecommerce.user.controller;
 
-import com.ecommerce.common.service.CloudinaryService;
 import com.ecommerce.user.domain.User;
 import com.ecommerce.user.dto.request.*;
 import com.ecommerce.user.dto.response.AuthResponse;
-import com.ecommerce.user.dto.response.UserProfileResponse;
 import com.ecommerce.user.service.AuthService;
 import com.ecommerce.user.service.UserService;
+import com.ecommerce.user.dto.response.UserProfileResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @Slf4j
 public class UserController {
     private final UserService userService;
-    private final CloudinaryService cloudinaryService;
 
     @PutMapping("/update_profile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UserUpdateReq request, Principal principal) {
@@ -42,30 +37,19 @@ public class UserController {
         return ResponseEntity.ok(u);
     }
 
-    @PostMapping("/upload-avatar")
-    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file, Principal principal) {
-        try {
-            String email = principal.getName();
-            log.info("Yêu cầu tải lên avatar mới cho user: {}", email);
-
-            String avatarUrl = cloudinaryService.uploadImage(file);
-
-            // Sửa tại đây: Thêm null cho tham số AddressDto thứ 5
-            UserUpdateReq updateReq = new UserUpdateReq(null, avatarUrl, null, null, null);
-
-            userService.updateProfile(email, updateReq);
-
-            return ResponseEntity.ok(Map.of(
-                    "avatar", avatarUrl,
-                    "message", "Cập nhật ảnh thành công!"
-            ));
-
-        } catch (Exception e) {
-            log.error("Lỗi upload ảnh: ", e);
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "Lỗi khi tải ảnh lên máy chủ!"
-            ));
-        }
+    // dành cho ấy trạng thái đăng kí trở thành seller
+    @GetMapping("/seller-registration/status")
+    public ResponseEntity<?> getRegistrationStatus(Principal principal) {
+        String email = principal.getName();
+        var status = userService.getSellerRegistrationStatus(email);
+        return ResponseEntity.ok(status);
+    }
+    // dành cho  trạng thái đăng kí trở thành seller
+    @PostMapping("/seller-registration")
+    public ResponseEntity<?> register(Principal principal,@RequestBody SellerRegistrationReq request) {
+        String email = principal.getName();
+        userService.submitRegistration(email, request);
+        return ResponseEntity.ok( "Đăng ký thành công");
     }
 
 

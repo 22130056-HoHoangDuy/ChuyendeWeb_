@@ -87,7 +87,7 @@ public AuthResponse register(RegisterRequest request) {
             .map(r -> String.valueOf(r.getName()))
             .toList();
 
-    String accessToken = jwtProvider.generateToken(user.getEmail(), rolesForToken);
+    String accessToken = jwtProvider.generateToken(user.getId(), user.getEmail(), rolesForToken);
     RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
     return new AuthResponse(
@@ -125,7 +125,7 @@ public AuthResponse register(RegisterRequest request) {
         List<String> roles = user.getRoles().stream()
                 .map(Role::getName)
                 .toList();
-        String accessToken = jwtProvider.generateToken(user.getEmail(),roles);
+        String accessToken = jwtProvider.generateToken(user.getId(), user.getEmail(), roles);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
         log.info("Đăng nhập thành công cho: {}", user.getEmail());

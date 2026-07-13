@@ -1,23 +1,32 @@
 package com.ecommerce.product.service.impl;
 
+import com.ecommerce.common.security.JwtCurrentUserProvider;
 import com.ecommerce.product.domain.Product;
 import com.ecommerce.product.domain.SellerProduct;
 import com.ecommerce.product.dto.request.ProductRequest;
+import com.ecommerce.product.dto.request.SellerProductRequest;
 import com.ecommerce.product.dto.response.ProductDetailResponse;
 import com.ecommerce.product.dto.response.ProductHomeResponse;
+import com.ecommerce.product.dto.response.ProductResponseDTO;
 import com.ecommerce.product.enums.SellerProductStatus;
-import com.ecommerce.product.repository.ProductRepository;
-import com.ecommerce.product.repository.SellerProductRepository;
+import com.ecommerce.product.repository.jpa.ProductRepository;
+import com.ecommerce.product.repository.jpa.SellerProductRepository;
 import com.ecommerce.product.service.ProductService;
 import com.ecommerce.product.service.WishlistService;
+import com.ecommerce.product.service.migration.DataMigrationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -26,6 +35,11 @@ public class ProductServiceImpl implements ProductService {
     private final ObjectMapper objectMapper;
     private final SellerProductRepository sellerProductRepository;
     private final WishlistService wishlistService;
+    private final JwtCurrentUserProvider currentUserProvider;
+    private final com.ecommerce.common.service.CloudinaryService cloudinaryService;
+    private final DataMigrationService dataMigrationService;
+    private final com.ecommerce.product.service.UserLookupService userLookupService;
+
     @Override
     @Transactional
     public Product createProduct(ProductRequest request) {
@@ -42,7 +56,10 @@ public class ProductServiceImpl implements ProductService {
                     .description(request.description())
                     .embedding(embeddingJson)
                     .build();
-            return productRepository.save(product);
+
+            Product savedProduct = productRepository.save(product);
+            dataMigrationService.syncSingleProduct(savedProduct);
+            return savedProduct;
         } catch (Exception e) {
             throw new RuntimeException("Lỗi nạp sản phẩm: " + e.getMessage());
         }
@@ -74,8 +91,10 @@ public class ProductServiceImpl implements ProductService {
         if (request.vector() != null) {
             try {
                 product.setEmbedding(objectMapper.writeValueAsString(request.vector()));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
+
 
         return productRepository.save(product);
     }
@@ -88,8 +107,6 @@ public class ProductServiceImpl implements ProductService {
         }
         productRepository.deleteById(id);
     }
-
-
 
     @Override
     public SellerProduct getSellerProductById(Long id) {
@@ -110,9 +127,8 @@ public class ProductServiceImpl implements ProductService {
         sellerProductRepository.save(sp);
     }
 
-
     @Override
-    public List<ProductHomeResponse> getAllActiveForHomePage(Long userId) {
+    public List<ProductHomeResponse> getAllActiveForHomePage() {
         List<SellerProduct> sellerProducts = sellerProductRepository.findAllByStatus(SellerProductStatus.ACTIVE);
 
         if (sellerProducts.isEmpty()) return List.of();
@@ -122,6 +138,8 @@ public class ProductServiceImpl implements ProductService {
         Map<Long, Product> productMap = productRepository.findAllById(productIds)
                 .stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
+
+        Long userId = currentUserProvider.getCurrentUserId();
         Set<Long> favoriteSellerProductIds = (userId != null)
                 ? wishlistService.getFavoriteSellerProductIds(userId)
                 : Set.of();
@@ -130,28 +148,27 @@ public class ProductServiceImpl implements ProductService {
             Product p = productMap.get(sp.getProductId());
 
             return new ProductHomeResponse(
-                    sp.getId(),                                      // sellerProductId
-                    p != null ? p.getProductName() : "Không xác định", // productName
-                    sp.getPrice(),                                  // price
-                    p != null ? p.getAvatar() : null,               // avatar
-                    p != null ? p.getOrigin() : "N/A",              // origin
-                    4.8,                                            // averageRating
-                    favoriteSellerProductIds.contains(sp.getId())   // isFavorite (Logic Toggle)
+                    sp.getId(),
+                    (sp.getName() != null && !sp.getName().isBlank()) ? sp.getName() : (p != null ? p.getProductName() : "Không xác định"),
+                    sp.getPrice(),
+                    p != null ? p.getAvatar() : null,
+                    p != null ? p.getOrigin() : "N/A",
+                    4.8,
+                    favoriteSellerProductIds.contains(sp.getId())
             );
-        }).collect(Collectors.toList());
+        }).collect(toList());
     }
+
     @Override
     public List<Product> searchSemantic(List<Double> queryVector) {
         return null;
     }
 
-
-
-
     @Override
     public List<SellerProduct> getAllActiveBySeller(Long sellerId) {
         return sellerProductRepository.findAllBySellerIdAndStatus(sellerId, SellerProductStatus.ACTIVE);
     }
+
     @Override
     public List<SellerProduct> getAllForAdmin() {
         return sellerProductRepository.findAll();
@@ -160,20 +177,165 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDetailResponse getProductDetail(Long id) {
         SellerProduct sp = sellerProductRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bán hàng cho ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sản phẩm"));
 
         Product p = productRepository.findById(sp.getProductId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm gốc cho ID: " + sp.getProductId()));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thông tin sản phẩm gốc"));
 
-        return new ProductDetailResponse(
-                sp.getId(),
-                p.getProductName(),
-                sp.getSku(),
-                sp.getPrice(),
-                p.getAvatar(),
-                p.getDescription(),
-                sp.getStock(),
-                sp.getSellerId()
-        );
+        String sellerName = userLookupService.getSellerName(sp.getSellerId());
+        String sellerEmail = userLookupService.getSellerEmail(sp.getSellerId());
+
+        return ProductDetailResponse.builder()
+                .id(sp.getId())
+                .productName(sp.getName() != null ? sp.getName() : p.getProductName())
+                .sku(sp.getSku())
+                .price(sp.getPrice())
+                .avatar(sp.getImageUrl() != null ? sp.getImageUrl() : p.getAvatar())
+                .description(p.getDescription())
+                .stock(sp.getStock())
+                .sellerId(sp.getSellerId())
+                .sellerName(sellerName)
+                .sellerEmail(sellerEmail)
+                .build();
     }
+
+    @Override
+    @Transactional
+    public void updateProductAverageRating(Long sellerProductId, Double newRating) {
+        SellerProduct sellerProduct = sellerProductRepository.findById(sellerProductId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm của người bán"));
+
+        sellerProductRepository.save(sellerProduct);
+    }
+
+    @Override
+    public List<SellerProduct> getAllSellerProducts() {
+        return sellerProductRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public SellerProduct addSellerProduct(Long sellerId, SellerProductRequest request) {
+        log.info(">>>> [SERVICE] Bắt đầu chuỗi logic rà soát danh mục lõi cho sản phẩm: {}", request.name());
+
+        Product coreProduct = productRepository.findByProductNameIgnoreCase(request.name().trim())
+                .orElseGet(() -> {
+                    log.info(">>>> [SERVICE] Nông sản '{}' chưa tồn tại trong danh mục hệ thống. Khởi tạo Product gốc ngay!", request.name());
+
+                    Product newCore = Product.builder()
+                            .productName(request.name().trim())
+                            .avatar(request.imageUrl())
+                            .categoryId(1L)
+                            .description(request.description() != null && !request.description().isBlank()
+                                    ? request.description().trim()
+                                    : "Sản phẩm nông sản sạch mới đăng bán trên hệ thống FruitFresh")
+                            .stock(request.stock())
+                            .embedding("[]")
+                            .build();
+
+                    return productRepository.save(newCore);
+                });
+
+        Long finalProductId = coreProduct.getId();
+        log.info(">>>> [SERVICE] Xác định thành công core productId: {} kết nối với gian hàng", finalProductId);
+
+        SellerProduct newSellerProduct = SellerProduct.builder()
+                .sellerId(sellerId)
+                .productId(finalProductId)
+                .name(request.name().trim())
+                .imageUrl(request.imageUrl())
+                .price(request.price())
+                .stock(request.stock())
+                .unit(request.unit() != null && !request.unit().isBlank() ? request.unit().trim() : "kg")
+                .sku("SKU-" + System.currentTimeMillis())
+                .status(SellerProductStatus.ACTIVE)
+                .build();
+
+        log.info(">>>> [SERVICE] Lưu thành công bản ghi vào bảng 'seller_products' với mã SKU: {}", newSellerProduct.getSku());
+        return sellerProductRepository.save(newSellerProduct);
+    }
+
+    @Override
+    @Transactional
+    public SellerProduct updateSellerProduct(Long currentSellerId, SellerProductRequest request) {
+        SellerProduct sp = sellerProductRepository.findById(request.productId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sản phẩm!")); //
+
+
+        sp.setName(request.name().trim());
+        sp.setPrice(request.price());
+        sp.setStock(request.stock());
+        if (request.imageUrl() != null) sp.setImageUrl(request.imageUrl());
+        if (request.unit() != null && !request.unit().isBlank()) sp.setUnit(request.unit().trim());
+
+        productRepository.findById(sp.getProductId()).ifPresent(coreProduct -> {
+            boolean isCoreUpdated = false;
+
+            if (request.imageUrl() != null && !request.imageUrl().equals(coreProduct.getAvatar())) {
+                coreProduct.setAvatar(request.imageUrl());
+                isCoreUpdated = true;
+            }
+            if (request.description() != null && !request.description().trim().equals(coreProduct.getDescription())) {
+                coreProduct.setDescription(request.description().trim());
+                isCoreUpdated = true;
+            }
+
+            if (isCoreUpdated) {
+                productRepository.save(coreProduct);
+                try {
+                    dataMigrationService.syncSingleProduct(coreProduct);
+                } catch (Exception e) {
+                    log.error("Lỗi đồng bộ sản phẩm {}: {}", coreProduct.getId(), e.getMessage());
+                }
+            }
+        });
+
+        return sellerProductRepository.save(sp);
+    }
+
+
+    @Override
+    @Transactional
+    public SellerProduct deleteSellerProduct(Long currentSellerId, Long id) {
+        log.info(">>>> [SERVICE] Seller {} đang yêu cầu xóa cứng sản phẩm ID: {}", currentSellerId, id);
+
+        SellerProduct sp = sellerProductRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại!"));
+
+        if (!sp.getSellerId().equals(currentSellerId)) {
+            throw new RuntimeException("Bạn không có quyền xóa sản phẩm này!");
+        }
+
+        try {
+            wishlistService.deleteBySellerProductId(id);
+            dataMigrationService.deleteProductFromEs(id);
+            sellerProductRepository.delete(sp);
+
+            log.info("🗑 Đã xóa cứng thành công SellerProduct ID: {}", id);
+        } catch (Exception e) {
+            log.error(" Lỗi xóa cứng sản phẩm ID {}: {}", id, e.getMessage());
+            throw new RuntimeException("Không thể xóa cứng sản phẩm: " + e.getMessage());
+        }
+
+        return sp;
+    }
+
+    @Override
+    public ProductResponseDTO getProductById(Long productSellerId) {
+        SellerProduct sp = sellerProductRepository.findById(productSellerId)
+                .orElse(null);
+
+        if (sp == null) return null;
+        Product p = productRepository.findById(sp.getProductId()).orElse(null);
+        return ProductResponseDTO.builder()
+                .sellerProductId(sp.getId())
+                .productName(sp.getName() != null ? sp.getName() : (p != null ? p.getProductName() : "Sản phẩm"))
+                .price(sp.getPrice())
+                .stock(sp.getStock())
+                .avatar(sp.getImageUrl() != null ? sp.getImageUrl() : (p != null ? p.getAvatar() : null))
+                .isFavorite(false)
+                .build();
+    }
+
+
 }
